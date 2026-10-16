@@ -1,19 +1,32 @@
+import { Canvas, Group } from '@shopify/react-native-skia';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { ORANGE } from '@/art/world';
+import { PixelSprite } from '@/components/PixelSprite';
+import { ORANGE_SIZE, PIXEL_SIZE } from '@/game/constants';
+import { useGameStore } from '@/store/useGameStore';
 
 export type GamePhase = 'ready' | 'playing' | 'over';
 
 type Props = {
   phase: GamePhase;
   score: number;
+  runOranges: number; // Bu oyunda toplanan portakal
 };
 
 // Oyunun üstündeki yazılar. pointerEvents="none": dokunuşlar alttaki oyuna geçsin.
-export function Hud({ phase, score }: Props) {
+export function Hud({ phase, score, runOranges }: Props) {
   const insets = useSafeAreaInsets();
+  const totalOranges = useGameStore((state) => state.totalOranges);
 
   return (
     <View style={[StyleSheet.absoluteFill, styles.container]} pointerEvents="none">
+      <View style={[styles.wallet, { top: insets.top + 16 }]}>
+        <OrangeIcon />
+        <Text style={styles.walletText}>{totalOranges}</Text>
+      </View>
+
       <Text style={[styles.score, { marginTop: insets.top + 24 }]}>{score}</Text>
 
       {phase === 'ready' && <Text style={styles.message}>Uçmak için dokun</Text>}
@@ -21,6 +34,12 @@ export function Hud({ phase, score }: Props) {
       {phase === 'over' && (
         <View style={styles.panel}>
           <Text style={styles.title}>Oyun bitti</Text>
+          {runOranges > 0 && (
+            <View style={styles.row}>
+              <Text style={styles.message}>+{runOranges}</Text>
+              <OrangeIcon />
+            </View>
+          )}
           <Text style={styles.message}>Tekrar için dokun</Text>
         </View>
       )}
@@ -28,9 +47,39 @@ export function Hud({ phase, score }: Props) {
   );
 }
 
+// Küçük bir Skia tuvalinde piksel portakal
+function OrangeIcon() {
+  return (
+    <Canvas style={styles.icon}>
+      <Group transform={[{ scale: PIXEL_SIZE }]}>
+        <PixelSprite sprite={ORANGE} />
+      </Group>
+    </Canvas>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
+  },
+  wallet: {
+    position: 'absolute',
+    right: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  walletText: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: 'white',
+    textShadowColor: 'rgba(0, 0, 0, 0.35)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 3,
+  },
+  icon: {
+    width: ORANGE_SIZE,
+    height: ORANGE_SIZE,
   },
   score: {
     fontSize: 56,
@@ -44,6 +93,11 @@ const styles = StyleSheet.create({
     marginTop: '40%',
     alignItems: 'center',
     gap: 8,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   title: {
     fontSize: 36,

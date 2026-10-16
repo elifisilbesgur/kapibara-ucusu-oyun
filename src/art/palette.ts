@@ -20,6 +20,9 @@ export const PALETTE: Record<string, string> = {
   M: '#6FAE3E', // bambu gövde
   H: '#A9DB6C', // bambu parlaklık
   S: '#4D8A33', // bambu gölge
+  // Portakal (O turuncu yukarıda)
+  o: '#C2551A', // portakal çerçeve
+  y: '#FFC27A', // portakal parlaklık
   // Gökyüzü
   c: '#D4EDF5', // bulut gölgesi
 };

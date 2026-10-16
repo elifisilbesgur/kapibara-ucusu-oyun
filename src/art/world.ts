@@ -41,3 +41,19 @@ export const CLOUD: Sprite = {
     '.cccccccccccccccccc.',
   ],
 };
+
+export const ORANGE: Sprite = {
+  offsetX: 0,
+  offsetY: 0,
+  rows: [
+    '....DM..',
+    '..ooDoo.',
+    '.oOOOOOo',
+    'oOyOOOOo',
+    'oOyOOOOo',
+    'oOOOOOOo',
+    '.oOOOOo.',
+    '..oooo..',
+  ],
+};
+export const ORANGE_PIXEL_SIZE = ORANGE.rows.length;

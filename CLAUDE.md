@@ -91,4 +91,8 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
 - Adım 6b tamam: bambu ve gökyüzü piksel art. Bambu = tekrarlanan boğum (`bambooStalk`),
   üst kamış aynı kamışın scaleY eksi ile ters çevrilmişi. Gökyüzü bantlar + sabit bulutlar
   (`Background.tsx`; parallax Adım 9'da). PixelSprite yan yana aynı renkleri tek dikdörtgende birleştirir.
-- Sıradaki adım: 7 (portakallar).
+- Adım 7 tamam: portakal her engelin ÖNÜNDEKİ boşluğun ortasında (`Obstacle.hasOrange/orangeY`,
+  `game/oranges.ts`). obstacleCount bir fazla engel tutar ki portakal ekran dışında belirsin.
+  Toplam portakal `store/useGameStore.ts` (zustand persist + AsyncStorage, anahtar 'kapibara-ucusu').
+  Hud: sağ üstte kumbara, oyun sonunda "+N".
+- Sıradaki adım: 8 (yolcular: sırtta yığılma, ağırlık etkisi, puan çarpanı).

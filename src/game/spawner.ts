@@ -4,17 +4,27 @@ import {
   OBSTACLE_SPACING,
   OBSTACLE_SPEED,
   OBSTACLE_WIDTH,
+  ORANGE_CHANCE,
+  ORANGE_Y_SPREAD,
 } from './constants';
 
-// Bir engel = üst ve alt bambu çifti.
+// Bir engel = üst ve alt bambu çifti + önündeki boşlukta (belki) bir portakal.
 // x: engelin sol kenarı, gapY: geçidin ortasının yüksekliği,
-// passed: oyuncu bu engeli geçti mi (puan bir kez sayılsın diye).
-export type Obstacle = { x: number; gapY: number; passed: boolean };
+// passed: oyuncu bu engeli geçti mi (puan bir kez sayılsın diye),
+// hasOrange / orangeY: önündeki portakal hâlâ duruyor mu, yüksekliği ne.
+export type Obstacle = {
+  x: number;
+  gapY: number;
+  passed: boolean;
+  hasOrange: boolean;
+  orangeY: number;
+};
 
-// Ekranı dolduracak kadar engel var; fazlası gereksiz.
+// Ekranı dolduracak kadar engel + bir fazlası: böylece en arkaya taşınan engelin
+// önündeki portakal da ekranın dışında belirir.
 export function obstacleCount(screenWidth: number): number {
   'worklet';
-  return Math.ceil((screenWidth + OBSTACLE_WIDTH) / OBSTACLE_SPACING);
+  return Math.ceil((screenWidth + OBSTACLE_WIDTH + OBSTACLE_SPACING) / OBSTACLE_SPACING);
 }
 
 // Geçidin ortası için ekranın üst/alt kenarına fazla yaklaşmayan rastgele bir yükseklik.
@@ -25,29 +35,40 @@ export function randomGapY(screenHeight: number): number {
   return min + Math.random() * (max - min);
 }
 
-// Başlangıç dizilimi: ilk engel ekranın hemen sağında, diğerleri arkasında sıralı.
+// Yeni bir engel: rastgele geçit, belki bir portakal (geçidin hizasına yakın).
+function newObstacle(x: number, screenHeight: number): Obstacle {
+  'worklet';
+  const gapY = randomGapY(screenHeight);
+  const orangeY = gapY + (Math.random() * 2 - 1) * ORANGE_Y_SPREAD;
+  return {
+    x,
+    gapY,
+    passed: false,
+    hasOrange: Math.random() < ORANGE_CHANCE,
+    orangeY: Math.min(screenHeight - GAP_MARGIN, Math.max(GAP_MARGIN, orangeY)),
+  };
+}
+
+// Başlangıç dizilimi: ilk engel (ve önündeki portakal) ekranın hemen sağında, diğerleri arkasında.
 export function createObstacles(screenWidth: number, screenHeight: number): Obstacle[] {
   'worklet';
+  const firstX = screenWidth + OBSTACLE_SPACING / 2;
   const obstacles: Obstacle[] = [];
   for (let i = 0; i < obstacleCount(screenWidth); i++) {
-    obstacles.push({
-      x: screenWidth + i * OBSTACLE_SPACING,
-      gapY: randomGapY(screenHeight),
-      passed: false,
-    });
+    obstacles.push(newObstacle(firstX + i * OBSTACLE_SPACING, screenHeight));
   }
   return obstacles;
 }
 
 // Her karede engelleri sola kaydırır. Soldan tamamen çıkan engel,
-// sıranın en arkasına (sağa) taşınır ve yeni bir geçit yüksekliği alır.
+// sıranın en arkasına (sağa) taşınır ve yeniden rastgele kurulur.
 export function stepObstacles(obstacles: Obstacle[], dt: number, screenHeight: number): Obstacle[] {
   'worklet';
   const loopLength = obstacles.length * OBSTACLE_SPACING;
   return obstacles.map((obstacle) => {
     const x = obstacle.x - OBSTACLE_SPEED * dt;
     if (x + OBSTACLE_WIDTH < 0) {
-      return { x: x + loopLength, gapY: randomGapY(screenHeight), passed: false };
+      return newObstacle(x + loopLength, screenHeight);
     }
     return { ...obstacle, x };
   });

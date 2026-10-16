@@ -9,6 +9,7 @@ import { Background } from '@/components/Background';
 import { Capybara } from '@/components/Capybara';
 import { Hud, type GamePhase } from '@/components/Hud';
 import { Obstacle } from '@/components/Obstacle';
+import { Orange } from '@/components/Orange';
 import { hitsAnyObstacle, isOutOfBounds, playerBox } from '@/game/collision';
 import { stepPropeller, stepThrust } from '@/game/animation';
 import {
@@ -17,8 +18,10 @@ import {
   PLAYER_X_RATIO,
   RESTART_DELAY_MS,
 } from '@/game/constants';
+import { collectOranges } from '@/game/oranges';
 import { frameDeltaSeconds, stepPosition, stepVelocity } from '@/game/physics';
 import { createObstacles, markPassed, obstacleCount, stepObstacles } from '@/game/spawner';
+import { useGameStore } from '@/store/useGameStore';
 
 export default function GameScreen() {
   const { width, height } = useWindowDimensions();
@@ -26,6 +29,8 @@ export default function GameScreen() {
   // React tarafı: sadece ekrandaki yazılar için (seyrek değişir)
   const [phase, setPhase] = useState<GamePhase>('ready');
   const [score, setScore] = useState(0);
+  const [runOranges, setRunOranges] = useState(0);
+  const addOranges = useGameStore((state) => state.addOranges);
 
   // UI thread tarafı: oyunun kendisi (her karede değişir)
   const playerX = width * PLAYER_X_RATIO;
@@ -34,6 +39,7 @@ export default function GameScreen() {
   const obstacles = useSharedValue(createObstacles(width, height));
   const phaseSV = useSharedValue<GamePhase>('ready');
   const scoreSV = useSharedValue(0);
+  const runOrangesSV = useSharedValue(0);
   const msSinceGameOver = useSharedValue(0);
 
   // Sadece görünüm için: alev, pervane, titreme
@@ -67,8 +73,18 @@ export default function GameScreen() {
       scheduleOnRN(setScore, scoreSV.get());
     }
 
-    // Çarpışma: yer, tavan ya da bambu
     const box = playerBox(playerX, playerY.get());
+
+    // Portakal: değdiklerini topla, hem bu oyunun sayacına hem kalıcı kumbaraya ekle
+    const picked = collectOranges(obstacles.get(), box);
+    obstacles.set(picked.obstacles);
+    if (picked.collected > 0) {
+      runOrangesSV.set(runOrangesSV.get() + picked.collected);
+      scheduleOnRN(setRunOranges, runOrangesSV.get());
+      scheduleOnRN(addOranges, picked.collected);
+    }
+
+    // Çarpışma: yer, tavan ya da bambu
     if (isOutOfBounds(box, height) || hitsAnyObstacle(box, obstacles.get(), height)) {
       phaseSV.set('over');
       msSinceGameOver.set(0);
@@ -87,8 +103,10 @@ export default function GameScreen() {
       velocity.set(0);
       obstacles.set(createObstacles(width, height));
       scoreSV.set(0);
+      runOrangesSV.set(0);
       phaseSV.set('ready');
       scheduleOnRN(setScore, 0);
+      scheduleOnRN(setRunOranges, 0);
       scheduleOnRN(setPhase, 'ready');
       return;
     }
@@ -110,6 +128,9 @@ export default function GameScreen() {
           {Array.from({ length: obstacleCount(width) }, (_, i) => (
             <Obstacle key={i} obstacles={obstacles} index={i} screenHeight={height} />
           ))}
+          {Array.from({ length: obstacleCount(width) }, (_, i) => (
+            <Orange key={i} obstacles={obstacles} index={i} clock={clock} />
+          ))}
           <Capybara
             x={playerX}
             y={playerY}
@@ -119,7 +140,7 @@ export default function GameScreen() {
             clock={clock}
           />
         </Canvas>
-        <Hud phase={phase} score={score} />
+        <Hud phase={phase} score={score} runOranges={runOranges} />
       </View>
     </GestureDetector>
   );

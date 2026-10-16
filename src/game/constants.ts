@@ -17,6 +17,12 @@ export const OBSTACLE_SPACING = 260; // İki engel arasındaki yatay mesafe
 export const OBSTACLE_SPEED = 160; // Engellerin sola kayma hızı (dp/s)
 export const GAP_MARGIN = 80; // Geçit ekranın üstüne/altına bundan fazla yaklaşmaz
 
+export const ORANGE_CHANCE = 0.6; // İki engel arasında portakal olma olasılığı (%60)
+export const ORANGE_Y_SPREAD = 90; // Portakal geçidin ortasından en fazla bu kadar yukarı/aşağı
+export const ORANGE_SIZE = 24; // Portakalın boyu (8 piksel x PIXEL_SIZE); çarpışma kutusu da bu
+export const ORANGE_BOB = 4; // Portakal havada bu kadar aşağı-yukarı süzülür (dp)
+export const ORANGE_BOB_SPEED = 3; // Süzülme hızı (radyan/sn)
+
 // Kapibara görünümü ve animasyonu
 export const PIXEL_SIZE = 3; // Çizimdeki 1 piksel ekranda 3x3 dp
 export const TILT_UP = 0.35; // Yükselirken burun en fazla bu kadar yukarı (radyan, ~20°)
