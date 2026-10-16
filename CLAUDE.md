@@ -72,4 +72,6 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
   Şablon dosyaları (sekmeler, tema) silindi; route tek ekran (`src/app/index.tsx` → `src/screens/GameScreen.tsx`).
 - Adım 2 tamam: `src/game/physics.ts` (worklet fizik) + `useFrameCallback` döngüsü; daire düşüyor,
   ekran altından çıkınca geçici olarak ortaya dönüyor (Adım 5'te oyun sonu olacak).
-- Sıradaki adım: 3 (dokununca zıplat).
+- Adım 3 tamam: `GestureHandlerRootView` layout'ta; `Gesture.Tap().onBegin` ile velocity = JUMP_VELOCITY.
+  Tavanda geçici olarak duruyor.
+- Sıradaki adım: 4 (sağdan gelen bambu engeli).

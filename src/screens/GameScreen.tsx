@@ -1,8 +1,9 @@
 import { Canvas, Circle, Fill } from '@shopify/react-native-skia';
 import { StyleSheet, useWindowDimensions } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useFrameCallback, useSharedValue } from 'react-native-reanimated';
 
-import { COLORS, PLAYER_RADIUS, PLAYER_X_RATIO } from '@/game/constants';
+import { COLORS, JUMP_VELOCITY, PLAYER_RADIUS, PLAYER_X_RATIO } from '@/game/constants';
 import { frameDeltaSeconds, stepPosition, stepVelocity } from '@/game/physics';
 
 export default function GameScreen() {
@@ -18,6 +19,12 @@ export default function GameScreen() {
     velocity.set(stepVelocity(velocity.get(), dt));
     playerY.set(stepPosition(playerY.get(), velocity.get(), dt));
 
+    // Geçici: tavanda dur (Adım 5'te tavana değmek oyunu bitirecek)
+    if (playerY.get() - PLAYER_RADIUS < 0) {
+      playerY.set(PLAYER_RADIUS);
+      velocity.set(0);
+    }
+
     // Geçici: ekrandan çıkınca ortaya geri koy (Adım 5'te oyun sonu olacak)
     if (playerY.get() - PLAYER_RADIUS > height) {
       playerY.set(height / 2);
@@ -25,11 +32,18 @@ export default function GameScreen() {
     }
   });
 
+  // Parmak ekrana değdiği an (kaldırmayı beklemeden) zıpla
+  const tap = Gesture.Tap().onBegin(() => {
+    velocity.set(JUMP_VELOCITY);
+  });
+
   return (
-    <Canvas style={styles.canvas}>
-      <Fill color={COLORS.sky} />
-      <Circle cx={playerX} cy={playerY} r={PLAYER_RADIUS} color={COLORS.player} />
-    </Canvas>
+    <GestureDetector gesture={tap}>
+      <Canvas style={styles.canvas}>
+        <Fill color={COLORS.sky} />
+        <Circle cx={playerX} cy={playerY} r={PLAYER_RADIUS} color={COLORS.player} />
+      </Canvas>
+    </GestureDetector>
   );
 }
 
