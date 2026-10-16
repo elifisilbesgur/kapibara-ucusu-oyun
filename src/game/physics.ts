@@ -11,10 +11,10 @@ export function frameDeltaSeconds(ms: number | null): number {
   return Math.min(ms / 1000, MAX_DT);
 }
 
-// velocity += gravity * dt
-export function stepVelocity(velocity: number, dt: number): number {
+// velocity += gravity * dt  (gravityScale: yolcuların ağırlığı, 1 = yolcusuz)
+export function stepVelocity(velocity: number, dt: number, gravityScale = 1): number {
   'worklet';
-  return Math.min(velocity + GRAVITY * dt, MAX_FALL_SPEED);
+  return Math.min(velocity + GRAVITY * gravityScale * dt, MAX_FALL_SPEED);
 }
 
 // y += velocity * dt

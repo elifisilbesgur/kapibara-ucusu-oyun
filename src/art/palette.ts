@@ -23,6 +23,12 @@ export const PALETTE: Record<string, string> = {
   // Portakal (O turuncu yukarıda)
   o: '#C2551A', // portakal çerçeve
   y: '#FFC27A', // portakal parlaklık
+  // Yolcular
+  T: '#5E9E4A', // kaplumbağa kabuk
+  t: '#3B6B30', // kabuk deseni
+  U: '#A6CF72', // kaplumbağa derisi
+  m: '#7A4A2A', // maymun tüyü
+  f: '#EBC79E', // maymun yüzü
   // Gökyüzü
   c: '#D4EDF5', // bulut gölgesi
 };

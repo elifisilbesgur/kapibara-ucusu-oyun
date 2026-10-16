@@ -17,11 +17,26 @@ export const OBSTACLE_SPACING = 260; // İki engel arasındaki yatay mesafe
 export const OBSTACLE_SPEED = 160; // Engellerin sola kayma hızı (dp/s)
 export const GAP_MARGIN = 80; // Geçit ekranın üstüne/altına bundan fazla yaklaşmaz
 
-export const ORANGE_CHANCE = 0.6; // İki engel arasında portakal olma olasılığı (%60)
-export const ORANGE_Y_SPREAD = 90; // Portakal geçidin ortasından en fazla bu kadar yukarı/aşağı
-export const ORANGE_SIZE = 24; // Portakalın boyu (8 piksel x PIXEL_SIZE); çarpışma kutusu da bu
-export const ORANGE_BOB = 4; // Portakal havada bu kadar aşağı-yukarı süzülür (dp)
-export const ORANGE_BOB_SPEED = 3; // Süzülme hızı (radyan/sn)
+// Engellerin önündeki boşlukta duran şeyler (portakal ya da yolcu)
+export const ORANGE_CHANCE = 0.5; // Portakal olma olasılığı (%50)
+export const PASSENGER_CHANCE = 0.15; // Yolcu olma olasılığı (%15); kalanı boş
+export const ITEM_Y_SPREAD = 90; // Geçidin ortasından en fazla bu kadar yukarı/aşağı
+export const ITEM_SIZE = 24; // Toplama kutusu (8 piksel x PIXEL_SIZE)
+export const ITEM_BOB = 4; // Havada bu kadar aşağı-yukarı süzülür (dp)
+export const ITEM_BOB_SPEED = 3; // Süzülme hızı (radyan/sn)
+
+// Puan ve yolcular
+export const POINTS_PER_GATE = 10; // Geçilen her engel (çarpanla çarpılır)
+export const MAX_PASSENGERS = 5; // Sırtta en fazla bu kadar yolcu
+export const MULTIPLIER_PER_PASSENGER = 0.2; // 1 yolcu x1.2, 2 yolcu x1.4 ...
+// Her yolcu yerçekimini ve zıplama gücünü bu oranlarla çarpar (risk-ödül)
+export const PASSENGER_STATS = {
+  bird: { gravity: 1.03, jump: 1.06 }, // hafif; itişi güçlendirir
+  turtle: { gravity: 1.12, jump: 0.95 }, // ağır; ama bir çarpmayı karşılar
+  monkey: { gravity: 1.07, jump: 0.97 }, // orta; portakalları uzaktan toplar
+};
+export const SHIELD_TIME = 1.2; // Kaplumbağa çarpmayı karşılayınca bu kadar saniye dokunulmazlık
+export const MAGNET_RANGE = 60; // Maymun varken portakal toplama kutusu her yönde bu kadar büyür
 
 // Kapibara görünümü ve animasyonu
 export const PIXEL_SIZE = 3; // Çizimdeki 1 piksel ekranda 3x3 dp

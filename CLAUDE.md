@@ -48,7 +48,8 @@ Fizik ve kural mantığı `src/game/` altında saf TypeScript (worklet), React't
 src/
   game/        constants.ts, physics.ts, collision.ts, spawner.ts, passengers.ts
   game/        ... animation.ts (itiş, pervane fazı, eğim)
-  art/         palette.ts (ortak palet + Sprite tipi), capybara.ts, world.ts (bambu, bulut)
+  art/         palette.ts (ortak palet + Sprite tipi), capybara.ts, world.ts (bambu, bulut, portakal),
+               passengers.ts (kuş, kaplumbağa, maymun; hepsi 8x6)
   components/  Capybara.tsx, PixelSprite.tsx, Obstacle.tsx, Orange.tsx, Passenger.tsx, Hud.tsx
   screens/     GameScreen.tsx, MenuScreen.tsx, GameOverScreen.tsx
   store/       useGameStore.ts
@@ -65,9 +66,23 @@ assets/        svg/, sounds/
 5. Çarpışma, skor, oyun sonu, tekrar başlat.
 6. Daireyi jetpackli, şapkalı kapibarayla değiştir; alev ve pervane animasyonu.
 7. Portakallar: toplama, sayaç, kalıcı kayıt.
-8. Yolcular: sırtta yığılma, ağırlık etkisi, puan çarpanı.
+8. Yolcular: sırtta yığılma, ağırlık etkisi, puan çarpanı + özel yetenekler
+   (kuş: itişi güçlendirir; kaplumbağa: ağır ama bir çarpmayı kabuğuyla karşılar;
+   maymun: yakındaki portakalları kendisi toplar).
 9. His: ses, haptics, ekran sarsıntısı, parallax arka plan.
+   + Tepkisiz kapibara: yüz ifadesi hiç değişmez, yalnızca portakal yerken minicik gülümser.
+   + Kayıp ekranı: çarpınca dramatik değil; yavaşça suya düşer, sırtüstü yüzer, yolcular
+     üstünde güneşlenir (ekranın altına su/nehir şeridi gerekir).
 10. Cila: menü, en yüksek skor, ayarlar.
+11. Esneme: uzun süre dokunulmazsa esneyip gözlerini kapatır, kontrol hafifçe ağırlaşır;
+    portakal yiyince ayılır.
+12. Yolcu bırakma durakları: nehir kenarında duraklar; yolcuları indirirsen o ana kadarki
+    puan "kasaya" girer, indirmezsen çarpan büyür ama risk de ("devam mı, bırak mı").
+13. Rüzgâr ve akıntılar: bazı bölgelerde hafif yukarı/aşağı rüzgâr; bambu yapraklarının
+    savrulmasından fark edilir.
+14. Arkadaş defteri: toplanan her hayvan türü albüme "anı fotoğrafı" olarak kaydedilir.
+15. Günün yolcusu: her gün farklı nadir bir hayvan (baykuş, flamingo, minik penguen).
+16. Fotoğraf modu: rekor kırınca sırttaki yolcularla paylaşılabilir bir kart.
 
 ## Çalışma şekli
 Geliştirici öğreniyor: her adımı birlikte yap ve kodu satır satır açıkla.
@@ -95,4 +110,9 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
   `game/oranges.ts`). obstacleCount bir fazla engel tutar ki portakal ekran dışında belirsin.
   Toplam portakal `store/useGameStore.ts` (zustand persist + AsyncStorage, anahtar 'kapibara-ucusu').
   Hud: sağ üstte kumbara, oyun sonunda "+N".
-- Sıradaki adım: 8 (yolcular: sırtta yığılma, ağırlık etkisi, puan çarpanı).
+- Adım 8 tamam: engel önündeki şey artık `item: 'none'|'orange'|PassengerKind` (`game/items.ts`,
+  oranges.ts silindi). Yolcular `passengers` shared value'da, sırtta en fazla 5 kat (Capybara.tsx).
+  Ağırlık/zıplama `PASSENGER_STATS` (constants), puan = 10 x çarpan (1 + 0.2 x yolcu).
+  Kuş: jump x1.06. Kaplumbağa: bambu çarpmasında en üstteki kaplumbağa iner, 1.2 sn dokunulmazlık
+  (yanıp sönme). Maymun: portakal toplama kutusu +60 dp (görsel çekim efekti henüz yok).
+- Sıradaki adım: 9 (his: ses, haptics, sarsıntı, parallax + tepkisiz yüz/gülümseme, suya düşme).

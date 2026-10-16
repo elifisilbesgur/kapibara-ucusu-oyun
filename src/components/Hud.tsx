@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ORANGE } from '@/art/world';
 import { PixelSprite } from '@/components/PixelSprite';
-import { ORANGE_SIZE, PIXEL_SIZE } from '@/game/constants';
+import { ITEM_SIZE, PIXEL_SIZE } from '@/game/constants';
 import { useGameStore } from '@/store/useGameStore';
 
 export type GamePhase = 'ready' | 'playing' | 'over';
@@ -13,10 +13,11 @@ type Props = {
   phase: GamePhase;
   score: number;
   runOranges: number; // Bu oyunda toplanan portakal
+  multiplier: number; // Yolculardan gelen puan çarpanı (1 = yolcusuz)
 };
 
 // Oyunun üstündeki yazılar. pointerEvents="none": dokunuşlar alttaki oyuna geçsin.
-export function Hud({ phase, score, runOranges }: Props) {
+export function Hud({ phase, score, runOranges, multiplier }: Props) {
   const insets = useSafeAreaInsets();
   const totalOranges = useGameStore((state) => state.totalOranges);
 
@@ -28,6 +29,7 @@ export function Hud({ phase, score, runOranges }: Props) {
       </View>
 
       <Text style={[styles.score, { marginTop: insets.top + 24 }]}>{score}</Text>
+      {multiplier > 1 && <Text style={styles.multiplier}>×{multiplier.toFixed(1)}</Text>}
 
       {phase === 'ready' && <Text style={styles.message}>Uçmak için dokun</Text>}
 
@@ -78,8 +80,8 @@ const styles = StyleSheet.create({
     textShadowRadius: 3,
   },
   icon: {
-    width: ORANGE_SIZE,
-    height: ORANGE_SIZE,
+    width: ITEM_SIZE,
+    height: ITEM_SIZE,
   },
   score: {
     fontSize: 56,
@@ -88,6 +90,14 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.35)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
+  },
+  multiplier: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#FFD23F',
+    textShadowColor: 'rgba(0, 0, 0, 0.35)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 3,
   },
   panel: {
     marginTop: '40%',
