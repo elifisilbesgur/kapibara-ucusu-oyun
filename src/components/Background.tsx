@@ -2,9 +2,10 @@ import { Group, Rect } from '@shopify/react-native-skia';
 import { useDerivedValue, type SharedValue } from 'react-native-reanimated';
 
 import type { Sky } from '@/art/skies';
+import type { Sprite } from '@/art/palette';
 import { MOON, STAR } from '@/art/world';
 import { PixelSprite } from '@/components/PixelSprite';
-import { PIXEL_SIZE } from '@/game/constants';
+import { PIXEL_SIZE, WATER_HEIGHT } from '@/game/constants';
 
 // Bulut, yıldız ve ayın yeri ekranın oranı olarak: her ekran boyunda benzer dağılım.
 const CLOUDS = [
@@ -24,6 +25,19 @@ const STARS = [
   { x: 0.35, y: 0.88 },
 ];
 const MOON_POSITION = { x: 0.72, y: 0.06 };
+const SKYLINE_GAP = 3; // Kıyıdaki şeyler arasında bu kadar piksel boşluk
+
+// Kıyı silüeti: sprite'ları soldan sağa ekran dolana kadar sırayla diz (piksel cinsinden x'ler)
+function layoutSkyline(sprites: Sprite[], screenWidth: number) {
+  const placed: { sprite: Sprite; x: number }[] = [];
+  let x = 0;
+  for (let i = 0; x * PIXEL_SIZE < screenWidth; i++) {
+    const sprite = sprites[i % sprites.length];
+    placed.push({ sprite, x });
+    x += sprite.rows[0].length + SKYLINE_GAP;
+  }
+  return placed;
+}
 
 type Props = {
   width: number;
@@ -90,9 +104,23 @@ function SkyLayer({
       )}
       {CLOUDS.map((cloud, i) => (
         <Group key={i} transform={at(cloud)}>
-          <PixelSprite sprite={sky.cloud} />
+          <PixelSprite sprite={sky.floaters[i % sky.floaters.length]} />
         </Group>
       ))}
+      {sky.skyline &&
+        layoutSkyline(sky.skyline, width).map(({ sprite, x }, i) => (
+          <Group
+            key={i}
+            transform={[
+              { translateX: x * PIXEL_SIZE },
+              // Alt kenarı deniz yüzeyine otursun
+              { translateY: height - WATER_HEIGHT - sprite.rows.length * PIXEL_SIZE },
+              { scale: PIXEL_SIZE },
+            ]}
+          >
+            <PixelSprite sprite={sprite} />
+          </Group>
+        ))}
     </Group>
   );
 }

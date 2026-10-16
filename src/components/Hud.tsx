@@ -14,19 +14,22 @@ type Props = {
   runOranges: number; // Bu oyunda toplanan portakal
   multiplier: number; // Yolculardan gelen puan çarpanı (1 = yolcusuz)
   banner: string | null; // Yeni moda geçince kısa süre görünen mod adı
+  showWallet: boolean; // Portakal kumbarası (sadece parası olan modlarda)
 };
 
 // Oyunun üstündeki yazılar. pointerEvents="none": dokunuşlar alttaki oyuna geçsin.
-export function Hud({ phase, score, runOranges, multiplier, banner }: Props) {
+export function Hud({ phase, score, runOranges, multiplier, banner, showWallet }: Props) {
   const insets = useSafeAreaInsets();
   const totalOranges = useGameStore((state) => state.totalOranges);
 
   return (
     <View style={[StyleSheet.absoluteFill, styles.container]} pointerEvents="none">
-      <View style={[styles.wallet, { top: insets.top + 16 }]}>
-        <OrangeIcon />
-        <Text style={styles.walletText}>{totalOranges}</Text>
-      </View>
+      {showWallet && (
+        <View style={[styles.wallet, { top: insets.top + 16 }]}>
+          <OrangeIcon />
+          <Text style={styles.walletText}>{totalOranges}</Text>
+        </View>
+      )}
 
       <Text style={[styles.score, { marginTop: insets.top + 24 }]}>{score}</Text>
       {multiplier > 1 && <Text style={styles.multiplier}>×{multiplier.toFixed(1)}</Text>}

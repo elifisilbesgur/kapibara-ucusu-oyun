@@ -18,6 +18,7 @@ export type ItemRule = {
   role: ItemRole;
   chance: number; // Bir engelin önünde bu eşyanın çıkma olasılığı (0-1)
   points: number; // Toplayınca kazanılan puan
+  box?: { width: number; height: number }; // Toplama kutusu (dp); yoksa ITEM_SIZE kare
 };
 
 // Seviye: skor eşiği geçilince uçuş hissi ve hız değişir

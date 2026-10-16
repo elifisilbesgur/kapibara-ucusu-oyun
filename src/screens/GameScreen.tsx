@@ -96,21 +96,23 @@ export default function GameScreen({ mode }: Props) {
   const shakeTime = useSharedValue(0);
   const joyTime = useSharedValue(0); // > 0 iken sevinçli yüz (gülümseme)
 
-  // Suya değdi: sıçrat, sırtüstü yüzme pozisyonuna geç
-  const fallIntoWater = () => {
-    'worklet';
-    phaseSV.set('over');
-    msSinceGameOver.set(0);
-    velocity.set(0);
-    playerY.set(floatY);
-    splashX.set(playerX);
-    splashTime.set(SPLASH_TIME);
-    scheduleOnRN(hapticSplash);
-    scheduleOnRN(setPhase, 'over');
-  };
-
   useFrameCallback((frame) => {
     const dt = frameDeltaSeconds(frame.timeSincePreviousFrame);
+
+    // Suya değdi: sıçrat, yüzme pozisyonuna geç.
+    // Bu fonksiyon bilerek döngünün İÇİNDE: worklet içinde tanımlanan fonksiyon da UI thread'de
+    // çalışır. Bileşenin gövdesinde tanımlıyken React Compiler onu yeniden yazıp worklet olmaktan
+    // çıkarabiliyor ve çağrıldığı an (suya düşünce) uygulama çöküyordu.
+    const fallIntoWater = () => {
+      phaseSV.set('over');
+      msSinceGameOver.set(0);
+      velocity.set(0);
+      playerY.set(floatY);
+      splashX.set(playerX);
+      splashTime.set(SPLASH_TIME);
+      scheduleOnRN(hapticSplash);
+      scheduleOnRN(setPhase, 'over');
+    };
 
     // Görünüm sayaçları her fazda çalışır (beklerken de pervane dönsün)
     clock.set(clock.get() + dt);
@@ -320,6 +322,7 @@ export default function GameScreen({ mode }: Props) {
           runOranges={runOranges}
           multiplier={multiplierFor(passengerCount)}
           banner={banner}
+          showWallet={rules.items.some((item) => item.role === 'currency')}
         />
       </View>
     </GestureDetector>

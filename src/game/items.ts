@@ -19,15 +19,17 @@ export function itemCenterX(obstacle: Obstacle): number {
   return obstacle.x - (OBSTACLE_SPACING - OBSTACLE_WIDTH) / 2;
 }
 
-// Toplama kutusu. `grow` > 0 ise kutu her yönde o kadar büyür (maymunun mıknatısı).
-export function itemBox(obstacle: Obstacle, grow = 0): Box {
+// Toplama kutusu: eşyanın ortasında, boyu eşyadan (yoksa ITEM_SIZE kare).
+// `grow` > 0 ise kutu her yönde o kadar büyür (maymunun mıknatısı).
+export function itemBox(obstacle: Obstacle, item?: ItemRule, grow = 0): Box {
   'worklet';
-  const half = ITEM_SIZE / 2 + grow;
+  const halfWidth = (item?.box?.width ?? ITEM_SIZE) / 2 + grow;
+  const halfHeight = (item?.box?.height ?? ITEM_SIZE) / 2 + grow;
   return {
-    x: itemCenterX(obstacle) - half,
-    y: obstacle.itemY - half,
-    width: half * 2,
-    height: half * 2,
+    x: itemCenterX(obstacle) - halfWidth,
+    y: obstacle.itemY - halfHeight,
+    width: halfWidth * 2,
+    height: halfHeight * 2,
   };
 }
 
@@ -67,14 +69,14 @@ export function collectItems(
     if (!item) return obstacle; // 'none'
 
     if (item.role === 'currency') {
-      if (!intersects(player, itemBox(obstacle, magnet))) return obstacle;
+      if (!intersects(player, itemBox(obstacle, item, magnet))) return obstacle;
       currency++;
     } else if (item.role === 'passenger') {
-      if (room === 0 || !intersects(player, itemBox(obstacle))) return obstacle;
+      if (room === 0 || !intersects(player, itemBox(obstacle, item))) return obstacle;
       room--;
       newPassengers.push(item.id as PassengerKind);
     } else {
-      if (!intersects(player, itemBox(obstacle))) return obstacle;
+      if (!intersects(player, itemBox(obstacle, item))) return obstacle;
       parts.push(item.id);
       partPoints += item.points;
     }

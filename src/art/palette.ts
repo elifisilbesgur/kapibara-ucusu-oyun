@@ -39,6 +39,12 @@ export const PALETTE: Record<string, string> = {
   w: '#5EC3E6', // su yüzeyi
   i: '#3FA4D4', // su
   I: '#2A7DB3', // derin su
+  // Burak modunun arka planı: bilgisayarlar (gökyüzüne yakın soluk tonlar, oyunun önüne geçmesin)
+  k: '#7DAAC3', // çerçeve
+  C: '#B3D9E9', // kasa
+  F: '#9CC8DC', // kasa gölgesi
+  e: '#E3F6FB', // ekran / ışık
+  u: '#C3E5F1', // ekrandaki satırlar
   // Gökyüzü ve bulutlar (her seviyenin kendi bulut rengi)
   c: '#D4EDF5', // gündüz bulut gölgesi
   Q: '#FFE3D0', // akşam bulutu

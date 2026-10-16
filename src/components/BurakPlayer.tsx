@@ -1,10 +1,9 @@
 import { Group } from '@shopify/react-native-skia';
 import { useDerivedValue } from 'react-native-reanimated';
 
-import { BURAK_HAPPY, BURAK_NORMAL } from '@/art/images';
+import { BURAK_HAPPY, BURAK_NORMAL, BURAK_PIXEL } from '@/art/images';
 import { PixelImage } from '@/components/PixelImage';
 import { tiltFor } from '@/game/animation';
-import { PIXEL_SIZE } from '@/game/constants';
 import type { PlayerProps } from '@/modes/types';
 
 // Dönme merkezi: gövdenin ortası (jetpack hariç), sanat pikseli cinsinden.
@@ -18,7 +17,7 @@ export function BurakPlayer({ x, y, velocity, joyTime }: PlayerProps) {
     { translateX: x },
     { translateY: y.get() },
     { rotate: tiltFor(velocity.get()) },
-    { scale: PIXEL_SIZE },
+    { scale: BURAK_PIXEL },
     { translateX: -PIVOT.x },
     { translateY: -PIVOT.y },
   ]);

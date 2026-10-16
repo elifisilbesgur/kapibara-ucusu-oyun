@@ -46,6 +46,8 @@ karlı dağ, gece şehri), gündüz-gece döngüsü, lo-fi müzik.
 Fizik ve kural mantığı `src/game/` altında saf TypeScript (worklet), React'ten bağımsız.
 `src/game/` içindeki HER fonksiyonun ilk satırı `'worklet';` olmalı; eksikse UI thread'den
 çağrıldığında uygulama çöker (dokunuş ve frame callback UI thread'de çalışır).
+Bileşen gövdesinde `'worklet'` fonksiyonu TANIMLAMA (React Compiler açık, yeniden yazıp bozabiliyor;
+suya düşünce çökme buydu). Yardımcı gerekiyorsa ya `src/game/` içine ya da useFrameCallback'in içine koy.
 
 ```
 src/
@@ -139,4 +141,12 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
     PIVOT gövde ortası 14.5,16.5), `components/CableObstacle.tsx` (uçlar PixelImage, gövde tek Rect +
     ImageShader ty="repeat"). Hitbox 13x28 px (jetpack hariç). Geçit 290 → 230 (puan başına 1 dp).
     `obstacleInset` artık {x, y}: kabloda yandan 4, uçtan 2 piksel (karo 18 px ama kablo 9-13 px).
-  - Sıradaki: B4 (bilgisayar parçaları, puanlar, 500 ms gülme).
+  - Çökme düzeltmesi: `fallIntoWater` bileşen gövdesinde worklet'ti → useFrameCallback içine taşındı.
+  - Burak küçüldü: Burak ve parçalar `BURAK_PIXEL` = 2 ile çizilir (kablo/deniz/arka plan 3).
+    Hitbox 26x56 dp, geçit 260 → 200, floatLift 13.
+  - B4 tamam: parçalar `components/PartItem.tsx`; kurallar RAM 0.24/1p, SSD 0.18/2p, CPU 0.12/3p,
+    GPU 0.06/5p, %30'u geçidin içinde. `ItemRule.box` = parçanın kendi toplama kutusu.
+    Toplayınca joyTime 0.5 sn (burak_happy), yeni parça süreyi sıfırlar. Kumbara sadece para olan modda.
+  - Arka plan: `Sky` artık `floaters` (bulut yerleri) + `skyline` (kıyıda dizilen) alır.
+    `art/office.ts` (monitör, kasa, sunucu, laptop, disket, imleç; soluk mavi), `OFFICE_SKY`.
+  - Sıradaki: B5 (kasa göstergesi, bonus, kutlama).

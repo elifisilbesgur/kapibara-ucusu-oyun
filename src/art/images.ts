@@ -2,6 +2,10 @@
 // width/height: SANAT pikseli cinsinden (1x dosyanın boyutu). Metro, telefonun ekranına göre
 // @6x/@8x sürümünü yükleyebilir; biz boyutu buradan aldığımız için hangisi gelirse gelsin
 // her sanat pikseli ekranda tam PIXEL_SIZE x PIXEL_SIZE dp çizilir.
+// Burak ve bilgisayar parçaları ekranda 2x çizilir (kablolar ve deniz 3x, PIXEL_SIZE).
+// Ölçek tam sayı olmalı ki nearest filtreyle pikseller eşit ve keskin kalsın.
+export const BURAK_PIXEL = 2;
+
 export type ImageSprite = {
   source: number;
   width: number;
@@ -54,4 +58,12 @@ export const PART_SSD: ImageSprite = {
   source: require('../../assets/sprites/part_ssd.png'),
   width: 18,
   height: 10,
+};
+
+// Toplanabilir parçalar, id → görsel
+export const PART_SPRITES: Record<string, ImageSprite> = {
+  ram: PART_RAM,
+  ssd: PART_SSD,
+  cpu: PART_CPU,
+  gpu: PART_GPU,
 };
