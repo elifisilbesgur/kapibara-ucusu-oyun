@@ -40,6 +40,8 @@ export const CAPYBARA_MODE: GameMode = {
     drowsiness: { fullAfter: 14, jumpLoss: 0.12, gravityGain: 0.1 },
     // 20 puandan sonra bambuların %25'i rüzgârlı; rüzgâr yerçekiminin ~üçte biri kadar iter
     wind: { chance: 0.25, accel: 380, minScore: 20 },
+    // Her gün bir nadir yolcu (baykuş / flamingo / penguen), engellerin %4'ünde
+    dailyPassenger: { kinds: ['owl', 'flamingo', 'penguin'], chance: 0.04 },
   },
   view: {
     Player: Capybara,

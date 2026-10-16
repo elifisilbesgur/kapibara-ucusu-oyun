@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PASSENGER_ABILITIES, PASSENGER_NAMES } from '@/art/passengers';
 import { FriendPhoto, PHOTO_SIZE } from '@/components/FriendPhoto';
-import { PASSENGER_KINDS } from '@/game/passengers';
+import { PASSENGER_KINDS, RARE_PASSENGERS } from '@/game/passengers';
 import { useGameStore, type FriendEntry } from '@/store/useGameStore';
 
 const DARK = '#3B2414';
@@ -57,6 +57,7 @@ function Polaroid({ kind, entry }: { kind: (typeof PASSENGER_KINDS)[number]; ent
     <View style={styles.polaroid}>
       <View style={styles.tape} />
       <FriendPhoto kind={kind} met={met} />
+      {RARE_PASSENGERS.includes(kind) && <Text style={styles.rare}>NADİR</Text>}
       <Text style={styles.name}>{met ? PASSENGER_NAMES[kind] : '???'}</Text>
       {met ? (
         <>
@@ -65,7 +66,11 @@ function Polaroid({ kind, entry }: { kind: (typeof PASSENGER_KINDS)[number]; ent
           <Text style={styles.meta}>{entry.rides} kez birlikte uçtunuz</Text>
         </>
       ) : (
-        <Text style={styles.meta}>Henüz tanışmadınız</Text>
+        <Text style={styles.meta}>
+          {RARE_PASSENGERS.includes(kind)
+            ? 'Henüz tanışmadınız · sadece bazı günler çıkar'
+            : 'Henüz tanışmadınız'}
+        </Text>
       )}
     </View>
   );
@@ -127,6 +132,19 @@ const styles = StyleSheet.create({
     width: 48,
     height: 16,
     backgroundColor: 'rgba(255, 210, 63, 0.6)', // fotoğrafı deftere tutturan bant
+  },
+  rare: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1,
+    color: 'white',
+    backgroundColor: '#D9667A',
+    overflow: 'hidden',
   },
   name: {
     marginTop: 8,

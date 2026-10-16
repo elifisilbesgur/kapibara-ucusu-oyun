@@ -52,6 +52,8 @@ export type ModeRules = {
   // Rüzgâr (isteğe bağlı): skor minScore'u geçince engellerin `chance` kadarı rüzgârlı olur;
   // rüzgâr bölgesinde oyuncu accel (dp/s²) ile yukarı ya da aşağı itilir
   wind?: { chance: number; accel: number; minScore: number };
+  // Günün yolcusu (isteğe bağlı): her gün `kinds` içinden tarihe göre biri, `chance` olasılıkla çıkar
+  dailyPassenger?: { kinds: PassengerKind[]; chance: number };
 };
 
 // --- Görünüm: React bileşenleri. Sadece çizim tarafı kullanır.

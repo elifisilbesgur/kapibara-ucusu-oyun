@@ -218,4 +218,10 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
   gökyüzü + sırtında arkadaşla gülümseyen kapibara), ad/yetenek/tanışma tarihi/uçuş sayısı;
   tanışılmamış = siluet (`silhouette()`) + "???". Türkçe ay adları elle (cihazdan bağımsız).
   Ana menüde "📔 Arkadaş Defteri".
-- Sıradaki adım: 10, 15, 16.
+- Adım 15 tamam (günün yolcusu): nadir yolcular baykuş/flamingo/penguen (`RARE_PASSENGERS`, 8x6 çizimler).
+  `modes/daily.ts`: `todaysPassenger(kinds, now)` = yerel takvim gün sayısı % 3 (o gün herkes için aynı);
+  `withDailyPassenger(rules, today)` kurallara eşya olarak ekler (kapibara: chance 0.04). GameScreen bunu
+  `useState(() => ...)` + `useMemo` ile bir kez hesaplar. Yetenekler: baykuş → uykululuk birikmez,
+  penguen → rüzgâr etkilemez, flamingo → çarpanda 2 sayılır (`multiplierCount`). Ana menüde "Günün yolcusu",
+  defterde "NADİR" etiketi.
+- Sıradaki adım: 10 (cila) ya da 16 (fotoğraf modu).

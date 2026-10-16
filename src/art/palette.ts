@@ -28,6 +28,7 @@ export const PALETTE: Record<string, string> = {
   t: '#3B6B30', // kabuk deseni
   U: '#A6CF72', // kaplumbağa derisi
   m: '#7A4A2A', // maymun tüyü
+  J: '#D9667A', // flamingo kanadı (koyu pembe)
   f: '#EBC79E', // maymun yüzü
   // Modlar
   q: '#A3271F', // balon çerçeve (koyu kırmızı)

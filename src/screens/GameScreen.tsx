@@ -1,5 +1,5 @@
 import { Canvas, Group } from '@shopify/react-native-skia';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useDerivedValue, useFrameCallback, useSharedValue } from 'react-native-reanimated';
@@ -51,6 +51,7 @@ import { levelFor, stepLevelBlend } from '@/game/levels';
 import {
   gravityScale,
   jumpScale,
+  multiplierCount,
   multiplierFor,
   removeTopmost,
   type PassengerKind,
@@ -71,6 +72,7 @@ import {
 } from '@/game/spawner';
 import type { GameMode } from '@/modes/types';
 import { windAt } from '@/game/wind';
+import { todaysPassenger, withDailyPassenger } from '@/modes/daily';
 import { useGameStore } from '@/store/useGameStore';
 
 type Props = {
@@ -78,7 +80,14 @@ type Props = {
 };
 
 export default function GameScreen({ mode }: Props) {
-  const { rules, view } = mode;
+  const { view } = mode;
+  // Günün yolcusu ekran açılırken bir kez belirlenir; kurallara nadir eşya olarak eklenir
+  const [today] = useState(() =>
+    mode.rules.dailyPassenger
+      ? todaysPassenger(mode.rules.dailyPassenger.kinds, new Date())
+      : undefined,
+  );
+  const rules = useMemo(() => withDailyPassenger(mode.rules, today), [mode.rules, today]);
   const { width, height } = useWindowDimensions();
   const waterY = height - WATER_HEIGHT; // Oyun alanının dibi: deniz yüzeyi
   const floatY = waterY - rules.floatLift; // Suda yüzerken gövde ortasının yüksekliği
@@ -198,8 +207,9 @@ export default function GameScreen({ mode }: Props) {
       return;
     }
 
-    // Uykululuk: hazır ekranında beklerken de, uçarken de birikir (portakal ya da dokunuş ayıltır)
-    if (rules.drowsiness) {
+    // Uykululuk: hazır ekranında beklerken de, uçarken de birikir (portakal ya da dokunuş ayıltır).
+    // Baykuş sırttayken birikmez (gece kuşu, kapibarayı uyanık tutar)
+    if (rules.drowsiness && !passengers.get().includes('owl')) {
       drowsiness.set(stepDrowsiness(drowsiness.get(), dt, rules.drowsiness.fullAfter));
     }
 
@@ -211,7 +221,8 @@ export default function GameScreen({ mode }: Props) {
     const gravity = stage.gravity * gravityScale(passengers.get()) * sleepy;
     velocity.set(stepVelocity(velocity.get(), dt, gravity, stage.maxFall));
     // Rüzgâr: oyuncu rüzgârlı bir engelin bölgesindeyse yukarı ya da aşağı itilir
-    if (rules.wind) {
+    // (penguen sırttayken etkilemez)
+    if (rules.wind && !passengers.get().includes('penguin')) {
       const wind = windAt(obstacles.get(), playerX);
       if (wind !== 0) velocity.set(velocity.get() + wind * rules.wind.accel * dt);
     }
@@ -233,7 +244,7 @@ export default function GameScreen({ mode }: Props) {
     if (scored.newlyPassed > 0) {
       // Taban puan hep güvende; yolcu çarpanından gelen fazlalık (bonus) sırtta birikir
       const base = scored.newlyPassed * rules.pointsPerGate;
-      const bonus = Math.round(base * (multiplierFor(passengers.get().length) - 1));
+      const bonus = Math.round(base * (multiplierFor(multiplierCount(passengers.get())) - 1));
       gained += base;
       if (bonus > 0 && hasStops) {
         pendingSV.set(pendingSV.get() + bonus);
@@ -259,7 +270,7 @@ export default function GameScreen({ mode }: Props) {
     }
     if (picked.newPassengers.length > 0) {
       passengers.set([...passengers.get(), ...picked.newPassengers]);
-      scheduleOnRN(setPassengerCount, passengers.get().length);
+      scheduleOnRN(setPassengerCount, multiplierCount(passengers.get()));
       scheduleOnRN(handleNewPassengers, picked.newPassengers);
       scheduleOnRN(hapticPassenger);
       scheduleOnRN(soundPassenger);
@@ -333,7 +344,7 @@ export default function GameScreen({ mode }: Props) {
       passengers.set(removeTopmost(passengers.get(), 'turtle'));
       shieldTime.set(SHIELD_TIME);
       shakeTime.set(SHAKE_TIME / 2);
-      scheduleOnRN(setPassengerCount, passengers.get().length);
+      scheduleOnRN(setPassengerCount, multiplierCount(passengers.get()));
       scheduleOnRN(hapticPassenger);
       scheduleOnRN(soundHit);
     } else if (hitBamboo || isOutOfBounds(box, waterY)) {

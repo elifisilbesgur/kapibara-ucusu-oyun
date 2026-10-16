@@ -1,18 +1,21 @@
 import { Canvas, Group } from '@shopify/react-native-skia';
 import { Link } from 'expo-router';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BODY, CAP, FLAME_SMALL, JETPACK, PROPELLER_FRAMES } from '@/art/capybara';
 import { BURAK_NORMAL, BURAK_PIXEL } from '@/art/images';
+import { PASSENGER_NAMES, PASSENGER_SPRITES } from '@/art/passengers';
 import { SKIES } from '@/art/skies';
 import { Background } from '@/components/Background';
 import { PixelImage } from '@/components/PixelImage';
 import { PixelSprite } from '@/components/PixelSprite';
 import { Water } from '@/components/Water';
 import { PIXEL_SIZE } from '@/game/constants';
+import { MODES } from '@/modes';
+import { todaysPassenger } from '@/modes/daily';
 import type { ModeId } from '@/modes/types';
 import { useGameStore } from '@/store/useGameStore';
 
@@ -23,6 +26,8 @@ export default function MainMenu() {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const bestScores = useGameStore((state) => state.bestScores);
+  const daily = MODES.capybara.rules.dailyPassenger;
+  const [today] = useState(() => (daily ? todaysPassenger(daily.kinds, new Date()) : undefined));
 
   // Arka plan bileşenleri shared value bekliyor; menüde hepsi sabit
   const levelBlend = useSharedValue(0);
@@ -43,6 +48,20 @@ export default function MainMenu() {
 
       <View style={[styles.content, { paddingTop: insets.top + 48 }]}>
         <Text style={styles.title}>Kapibara{'\n'}Uçuşu</Text>
+
+        {today && (
+          <View style={styles.daily}>
+            <Canvas style={styles.dailyIcon}>
+              <Group transform={[{ scale: PIXEL_SIZE }]}>
+                <PixelSprite sprite={PASSENGER_SPRITES[today]} />
+              </Group>
+            </Canvas>
+            <View>
+              <Text style={styles.dailyLabel}>GÜNÜN YOLCUSU</Text>
+              <Text style={styles.dailyName}>{PASSENGER_NAMES[today]}</Text>
+            </View>
+          </View>
+        )}
 
         <ModeCard id="capybara" name="Kapibara" best={bestScores.capybara} preview={<CapybaraPreview />} />
         <ModeCard id="burak" name="Burak Uçuyor" best={bestScores.burak} preview={<BurakPreview />} />
@@ -166,6 +185,32 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#7A5A44',
+  },
+  daily: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: 'rgba(59, 36, 20, 0.75)',
+    marginTop: -8,
+    marginBottom: 8,
+  },
+  dailyIcon: {
+    width: 8 * PIXEL_SIZE,
+    height: 6 * PIXEL_SIZE,
+  },
+  dailyLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1,
+    color: '#FFD23F',
+  },
+  dailyName: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: 'white',
   },
   albumButton: {
     marginTop: 8,

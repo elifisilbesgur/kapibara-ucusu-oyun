@@ -28,6 +28,10 @@ export const PASSENGER_STATS = {
   bird: { gravity: 1.03, jump: 1.06 }, // hafif; itişi güçlendirir
   turtle: { gravity: 1.12, jump: 0.95 }, // ağır; ama bir çarpmayı karşılar
   monkey: { gravity: 1.07, jump: 0.97 }, // orta; portakalları uzaktan toplar
+  // Nadir (günün yolcusu)
+  owl: { gravity: 1.05, jump: 1 }, // sırttayken kapibara uykulanmaz
+  flamingo: { gravity: 1, jump: 1.03 }, // zarif; çarpanda iki yolcu sayılır
+  penguin: { gravity: 1.08, jump: 0.97 }, // tombul; sırttayken rüzgâr etkilemez
 };
 export const SHIELD_TIME = 1.2; // Kaplumbağa çarpmayı karşılayınca bu kadar saniye dokunulmazlık
 export const MAGNET_RANGE = 60; // Maymun varken portakal toplama kutusu her yönde bu kadar büyür
