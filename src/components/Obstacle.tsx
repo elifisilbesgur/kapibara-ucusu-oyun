@@ -1,7 +1,10 @@
-import { Group, Rect } from '@shopify/react-native-skia';
+import { Group } from '@shopify/react-native-skia';
+import { useMemo } from 'react';
 import { useDerivedValue, type SharedValue } from 'react-native-reanimated';
 
-import { COLORS, OBSTACLE_GAP, OBSTACLE_WIDTH } from '@/game/constants';
+import { BAMBOO_SEGMENT_HEIGHT, bambooStalk } from '@/art/world';
+import { PixelSprite } from '@/components/PixelSprite';
+import { OBSTACLE_GAP, PIXEL_SIZE } from '@/game/constants';
 import type { Obstacle as ObstacleData } from '@/game/spawner';
 
 type Props = {
@@ -11,16 +14,41 @@ type Props = {
 };
 
 export function Obstacle({ obstacles, index, screenHeight }: Props) {
-  // Engelin verisinden çizim için gereken sayıları her karede hesapla
-  const x = useDerivedValue(() => obstacles.get()[index].x);
-  const topHeight = useDerivedValue(() => obstacles.get()[index].gapY - OBSTACLE_GAP / 2);
-  const bottomY = useDerivedValue(() => obstacles.get()[index].gapY + OBSTACLE_GAP / 2);
-  const bottomHeight = useDerivedValue(() => screenHeight - bottomY.get());
+  // Ekran boyunu kaplayacak kadar uzun bir kamış (bir kez hazırlanır)
+  const stalk = useMemo(() => {
+    const segments = Math.ceil(screenHeight / (BAMBOO_SEGMENT_HEIGHT * PIXEL_SIZE));
+    return bambooStalk(segments);
+  }, [screenHeight]);
+
+  // Alt kamış: geçidin alt kenarından başlayıp aşağı uzanır
+  const bottomTransform = useDerivedValue(() => {
+    const obstacle = obstacles.get()[index];
+    return [
+      { translateX: obstacle.x },
+      { translateY: obstacle.gapY + OBSTACLE_GAP / 2 },
+      { scale: PIXEL_SIZE },
+    ];
+  });
+
+  // Üst kamış: aynı kamışın baş aşağı çevrilmişi (scaleY eksi), geçidin üst kenarından yukarı uzanır
+  const topTransform = useDerivedValue(() => {
+    const obstacle = obstacles.get()[index];
+    return [
+      { translateX: obstacle.x },
+      { translateY: obstacle.gapY - OBSTACLE_GAP / 2 },
+      { scaleX: PIXEL_SIZE },
+      { scaleY: -PIXEL_SIZE },
+    ];
+  });
 
   return (
-    <Group color={COLORS.bamboo}>
-      <Rect x={x} y={0} width={OBSTACLE_WIDTH} height={topHeight} />
-      <Rect x={x} y={bottomY} width={OBSTACLE_WIDTH} height={bottomHeight} />
-    </Group>
+    <>
+      <Group transform={topTransform}>
+        <PixelSprite sprite={stalk} />
+      </Group>
+      <Group transform={bottomTransform}>
+        <PixelSprite sprite={stalk} />
+      </Group>
+    </>
   );
 }

@@ -2,23 +2,31 @@ import { Group, Path, Skia, type SkPath } from '@shopify/react-native-skia';
 import { useMemo } from 'react';
 import { useDerivedValue, type SharedValue } from 'react-native-reanimated';
 
-import { PALETTE, type Sprite } from '@/art/capybara';
+import { PALETTE, type Sprite } from '@/art/palette';
 
-// Izgarayı renk başına tek bir Path'e çevirir: 300 kare yerine ~10 şekil çizilir.
+// Izgarayı renk başına tek bir Path'e çevirir: yüzlerce kare yerine ~10 şekil çizilir.
+// Yan yana aynı renkteki pikseller tek bir uzun dikdörtgen olur ("MMMM" → 4x1).
 // Her piksel 1x1 birim; büyütme işini dışarıdaki Group'un scale'i yapar.
 function buildLayers(sprite: Sprite): { color: string; path: SkPath }[] {
   const paths = new Map<string, SkPath>();
   sprite.rows.forEach((row, y) => {
-    [...row].forEach((char, x) => {
-      if (char === '.') return;
-      const color = PALETTE[char];
-      let path = paths.get(color);
-      if (!path) {
-        path = Skia.Path.Make();
-        paths.set(color, path);
+    let x = 0;
+    while (x < row.length) {
+      const char = row[x];
+      let runLength = 1;
+      while (row[x + runLength] === char) runLength++;
+
+      if (char !== '.') {
+        const color = PALETTE[char];
+        let path = paths.get(color);
+        if (!path) {
+          path = Skia.Path.Make();
+          paths.set(color, path);
+        }
+        path.addRect(Skia.XYWHRect(sprite.offsetX + x, sprite.offsetY + y, runLength, 1));
       }
-      path.addRect(Skia.XYWHRect(sprite.offsetX + x, sprite.offsetY + y, 1, 1));
-    });
+      x += runLength;
+    }
   });
   return [...paths].map(([color, path]) => ({ color, path }));
 }

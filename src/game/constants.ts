@@ -11,7 +11,7 @@ export const JUMP_VELOCITY = -480; // Dokununca hız bu olur (eksi = yukarı)
 export const RESTART_DELAY_MS = 600; // Oyun bitince yanlışlıkla hemen yeniden başlamayı önler
 export const MAX_DT = 1 / 20; // Bir karede en fazla 50 ms ilerle (takılmada ışınlanmayı önler)
 
-export const OBSTACLE_WIDTH = 64; // Bir bambu kamışının kalınlığı
+export const OBSTACLE_WIDTH = 54; // Bir bambu kamışının kalınlığı (18 piksel x PIXEL_SIZE)
 export const OBSTACLE_GAP = 230; // Üst ve alt bambu arasındaki geçit yüksekliği
 export const OBSTACLE_SPACING = 260; // İki engel arasındaki yatay mesafe
 export const OBSTACLE_SPEED = 160; // Engellerin sola kayma hızı (dp/s)
@@ -27,6 +27,6 @@ export const PROPELLER_BOOST_FPS = 20; // Dokununca bu kadar ek hız
 export const FLAME_FLICKER_FPS = 12; // Alev saniyede kaç kez titrer
 
 export const COLORS = {
-  sky: '#BFE6F2',
-  bamboo: '#7BAE4E',
+  // Gökyüzü yukarıdan aşağı bantlar halinde açılır (piksel art usulü degrade)
+  skyBands: ['#7FC8E3', '#94D3E9', '#AADDEE', '#BFE6F2', '#D3EEF5'],
 };

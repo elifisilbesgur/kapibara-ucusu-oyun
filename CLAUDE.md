@@ -48,7 +48,7 @@ Fizik ve kural mantığı `src/game/` altında saf TypeScript (worklet), React't
 src/
   game/        constants.ts, physics.ts, collision.ts, spawner.ts, passengers.ts
   game/        ... animation.ts (itiş, pervane fazı, eğim)
-  art/         capybara.ts (piksel ızgaraları + palet)
+  art/         palette.ts (ortak palet + Sprite tipi), capybara.ts, world.ts (bambu, bulut)
   components/  Capybara.tsx, PixelSprite.tsx, Obstacle.tsx, Orange.tsx, Passenger.tsx, Hud.tsx
   screens/     GameScreen.tsx, MenuScreen.tsx, GameOverScreen.tsx
   store/       useGameStore.ts
@@ -88,5 +88,7 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
 - Adım 6 tamam (piksel art): kapibara + jetpack + pervaneli şapka `src/art/capybara.ts`'te.
   Eğim `tiltFor(velocity)`, alev `thrust` (dokununca 1, söner) ile küçük/büyük + titreme,
   pervane `propellerPhase` ile 4 kare. Çarpışma kutusu artık dikdörtgen (PLAYER_HITBOX_WIDTH/HEIGHT).
-  Bambular hâlâ düz yeşil dikdörtgen — piksel art'a çevrilecek.
-- Sıradaki adım: 7 (portakallar) — istenirse önce bambu/arka planı piksel art'a çevir.
+- Adım 6b tamam: bambu ve gökyüzü piksel art. Bambu = tekrarlanan boğum (`bambooStalk`),
+  üst kamış aynı kamışın scaleY eksi ile ters çevrilmişi. Gökyüzü bantlar + sabit bulutlar
+  (`Background.tsx`; parallax Adım 9'da). PixelSprite yan yana aynı renkleri tek dikdörtgende birleştirir.
+- Sıradaki adım: 7 (portakallar).

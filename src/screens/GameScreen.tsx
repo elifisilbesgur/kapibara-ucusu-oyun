@@ -1,17 +1,17 @@
-import { Canvas, Fill } from '@shopify/react-native-skia';
+import { Canvas } from '@shopify/react-native-skia';
 import { useState } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useFrameCallback, useSharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
+import { Background } from '@/components/Background';
 import { Capybara } from '@/components/Capybara';
 import { Hud, type GamePhase } from '@/components/Hud';
 import { Obstacle } from '@/components/Obstacle';
 import { hitsAnyObstacle, isOutOfBounds, playerBox } from '@/game/collision';
 import { stepPropeller, stepThrust } from '@/game/animation';
 import {
-  COLORS,
   JUMP_VELOCITY,
   PLAYER_HITBOX_WIDTH,
   PLAYER_X_RATIO,
@@ -106,7 +106,7 @@ export default function GameScreen() {
     <GestureDetector gesture={tap}>
       <View style={styles.container}>
         <Canvas style={styles.container}>
-          <Fill color={COLORS.sky} />
+          <Background width={width} height={height} />
           {Array.from({ length: obstacleCount(width) }, (_, i) => (
             <Obstacle key={i} obstacles={obstacles} index={i} screenHeight={height} />
           ))}

@@ -1,28 +1,7 @@
-// Kapibara piksel çizimleri. Her satır bir piksel sırası, her harf bir renk.
-// '.' boş (saydam). Harflerin renkleri PALETTE'te.
+import type { Sprite } from './palette';
+
+// Kapibara piksel çizimleri. Her satır bir piksel sırası, her harf bir renk (bkz. palette.ts).
 // Tüm parçalar aynı ızgarada konumlanır: offsetX/offsetY gövdenin sol üstüne göre.
-
-export const PALETTE: Record<string, string> = {
-  K: '#3B2414', // çerçeve (koyu kahve)
-  B: '#9C6B3F', // gövde
-  L: '#C9A274', // açık karın
-  N: '#2A1A0E', // burun
-  E: '#16120F', // göz
-  W: '#FFFFFF', // göz parıltısı
-  P: '#F2899A', // pembe yanak
-  G: '#A7AFBA', // jetpack gövde
-  g: '#6B7380', // jetpack gölge
-  R: '#E2483D', // kırmızı şerit / pervane kanadı
-  Y: '#FFD23F', // sarı (şapka, alev)
-  O: '#FF8A2A', // turuncu alev
-  b: '#3F7FD9', // mavi pervane kanadı
-};
-
-export type Sprite = {
-  rows: string[];
-  offsetX: number;
-  offsetY: number;
-};
 
 // Gövde + jetpack + şapka. Sağa bakıyor, jetpack sırtta (solda).
 export const BODY: Sprite = {
