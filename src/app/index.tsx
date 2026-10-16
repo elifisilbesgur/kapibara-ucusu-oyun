@@ -10,6 +10,11 @@ export default function Menu() {
           <Text style={styles.label}>Kapibara</Text>
         </Pressable>
       </Link>
+      <Link href="/game?mode=burak" asChild>
+        <Pressable style={styles.button}>
+          <Text style={styles.label}>Burak Uçuyor</Text>
+        </Pressable>
+      </Link>
       <Link href="/sprites" asChild>
         <Pressable style={styles.button}>
           <Text style={styles.label}>Görsel testi</Text>

@@ -33,7 +33,8 @@ export type LevelRule = {
 export type ModeRules = {
   hitbox: { width: number; height: number }; // Oyuncunun çarpışma kutusu (dp)
   gap: { start: number; min: number; shrinkPerPoint: number }; // Geçit boyu skorla daralır
-  obstacleInset: number; // Engelin çarpışma kutusu görselden bu kadar küçük (dp)
+  // Engelin çarpışma kutusu görselden bu kadar küçük (dp): x yanlardan, y geçide bakan uçtan
+  obstacleInset: { x: number; y: number };
   pointsPerGate: number; // Geçilen her engel
   items: ItemRule[];
   itemInGapChance: number; // Eşyanın engellerin arası yerine geçidin içinde çıkma olasılığı

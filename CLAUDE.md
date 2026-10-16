@@ -135,4 +135,8 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
   - B2 tamam: `src/modes/` (types.ts, capybara.ts, index.ts). GameMode = rules (sadece veri, worklet'ler
     okur) + view (bileşenler). GameScreen `mode` prop'u alır. Engeller kendi `gapSize`'ını taşır
     (`gapSizeFor(score)`), eşyalar id + rol (currency/passenger/part), `itemInGap`, `obstacleInset`.
-  - Sıradaki: B3 (Burak karakteri + CAT6 kablo engeli).
+  - B3 tamam: `modes/burak.ts`, `components/BurakPlayer.tsx` (normal/happy, kapibarayla aynı eğim,
+    PIVOT gövde ortası 14.5,16.5), `components/CableObstacle.tsx` (uçlar PixelImage, gövde tek Rect +
+    ImageShader ty="repeat"). Hitbox 13x28 px (jetpack hariç). Geçit 290 → 230 (puan başına 1 dp).
+    `obstacleInset` artık {x, y}: kabloda yandan 4, uçtan 2 piksel (karo 18 px ama kablo 9-13 px).
+  - Sıradaki: B4 (bilgisayar parçaları, puanlar, 500 ms gülme).

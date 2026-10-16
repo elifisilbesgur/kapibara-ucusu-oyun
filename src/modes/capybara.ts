@@ -13,7 +13,7 @@ export const CAPYBARA_MODE: GameMode = {
   rules: {
     hitbox: { width: 40, height: 30 }, // Gövdeden biraz küçük (affedici olsun)
     gap: { start: 230, min: 230, shrinkPerPoint: 0 }, // Geçit hiç daralmaz; zorluk modlardan gelir
-    obstacleInset: 0,
+    obstacleInset: { x: 0, y: 0 },
     pointsPerGate: 10, // Yolcu çarpanıyla çarpılır
     items: [
       { id: 'orange', role: 'currency', chance: 0.5, points: 0 },

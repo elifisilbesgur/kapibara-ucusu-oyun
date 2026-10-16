@@ -27,13 +27,21 @@ export function playerBox(cx: number, cy: number, size: { width: number; height:
 }
 
 // Bir engelin üst ve alt parçası iki ayrı kutu.
-// inset: kutular görselden bu kadar küçük (yanlardan ve geçide bakan uçtan) → "değmedim ki" olmasın.
-export function obstacleBoxes(obstacle: Obstacle, screenHeight: number, inset = 0): [Box, Box] {
+// inset: kutular görselden bu kadar küçük (x: yanlardan, y: geçide bakan uçtan)
+// → "değmedim ki" hissi olmasın.
+export type Inset = { x: number; y: number };
+const NO_INSET: Inset = { x: 0, y: 0 };
+
+export function obstacleBoxes(
+  obstacle: Obstacle,
+  screenHeight: number,
+  inset: Inset = NO_INSET,
+): [Box, Box] {
   'worklet';
-  const topHeight = obstacle.gapY - obstacle.gapSize / 2 - inset;
-  const bottomY = obstacle.gapY + obstacle.gapSize / 2 + inset;
-  const x = obstacle.x + inset;
-  const width = OBSTACLE_WIDTH - inset * 2;
+  const topHeight = obstacle.gapY - obstacle.gapSize / 2 - inset.y;
+  const bottomY = obstacle.gapY + obstacle.gapSize / 2 + inset.y;
+  const x = obstacle.x + inset.x;
+  const width = OBSTACLE_WIDTH - inset.x * 2;
   return [
     { x, y: 0, width, height: topHeight },
     { x, y: bottomY, width, height: screenHeight - bottomY },
@@ -44,7 +52,7 @@ export function hitsAnyObstacle(
   player: Box,
   obstacles: Obstacle[],
   screenHeight: number,
-  inset = 0,
+  inset: Inset = NO_INSET,
 ): boolean {
   'worklet';
   for (const obstacle of obstacles) {
