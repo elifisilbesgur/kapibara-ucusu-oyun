@@ -70,4 +70,6 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
 ## Durum
 - Adım 1 tamam: Skia kuruldu, `GameScreen` tam ekran gökyüzü + ortada kahverengi daire çiziyor.
   Şablon dosyaları (sekmeler, tema) silindi; route tek ekran (`src/app/index.tsx` → `src/screens/GameScreen.tsx`).
-- Sıradaki adım: 2 (useFrameCallback ile yerçekimi).
+- Adım 2 tamam: `src/game/physics.ts` (worklet fizik) + `useFrameCallback` döngüsü; daire düşüyor,
+  ekran altından çıkınca geçici olarak ortaya dönüyor (Adım 5'te oyun sonu olacak).
+- Sıradaki adım: 3 (dokununca zıplat).

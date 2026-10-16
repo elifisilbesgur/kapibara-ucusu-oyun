@@ -1,13 +1,29 @@
 import { Canvas, Circle, Fill } from '@shopify/react-native-skia';
 import { StyleSheet, useWindowDimensions } from 'react-native';
+import { useFrameCallback, useSharedValue } from 'react-native-reanimated';
 
 import { COLORS, PLAYER_RADIUS, PLAYER_X_RATIO } from '@/game/constants';
+import { frameDeltaSeconds, stepPosition, stepVelocity } from '@/game/physics';
 
 export default function GameScreen() {
   const { width, height } = useWindowDimensions();
 
   const playerX = width * PLAYER_X_RATIO;
-  const playerY = height / 2;
+  const playerY = useSharedValue(height / 2);
+  const velocity = useSharedValue(0);
+
+  useFrameCallback((frame) => {
+    const dt = frameDeltaSeconds(frame.timeSincePreviousFrame);
+
+    velocity.set(stepVelocity(velocity.get(), dt));
+    playerY.set(stepPosition(playerY.get(), velocity.get(), dt));
+
+    // Geçici: ekrandan çıkınca ortaya geri koy (Adım 5'te oyun sonu olacak)
+    if (playerY.get() - PLAYER_RADIUS > height) {
+      playerY.set(height / 2);
+      velocity.set(0);
+    }
+  });
 
   return (
     <Canvas style={styles.canvas}>
