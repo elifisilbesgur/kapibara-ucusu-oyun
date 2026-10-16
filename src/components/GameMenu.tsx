@@ -75,6 +75,9 @@ export function GameMenu({ currentMode, onOpenChange }: Props) {
         <Pressable style={styles.close} onPress={() => setMenuOpen(false)}>
           <Text style={styles.closeText}>Devam et</Text>
         </Pressable>
+        <Pressable style={styles.close} onPress={() => router.replace('/')}>
+          <Text style={styles.closeText}>Ana menü</Text>
+        </Pressable>
       </View>
     </View>
   );

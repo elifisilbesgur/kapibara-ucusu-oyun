@@ -21,10 +21,22 @@ type Props = {
   banner: Banner | null; // Kısa süre görünen duyuru (yeni mod, kasa tamam)
   showWallet: boolean; // Portakal kumbarası (sadece parası olan modlarda)
   kit?: { parts: string[]; mask: number }; // Kasa göstergesi (sadece kasası olan modlarda)
+  best: number; // Bu modun rekoru
+  newRecord: boolean; // Biten oyun rekor kırdı mı
 };
 
 // Oyunun üstündeki yazılar. pointerEvents="none": dokunuşlar alttaki oyuna geçsin.
-export function Hud({ phase, score, runOranges, multiplier, banner, showWallet, kit }: Props) {
+export function Hud({
+  phase,
+  score,
+  runOranges,
+  multiplier,
+  banner,
+  showWallet,
+  kit,
+  best,
+  newRecord,
+}: Props) {
   const insets = useSafeAreaInsets();
   const totalOranges = useGameStore((state) => state.totalOranges);
 
@@ -53,6 +65,11 @@ export function Hud({ phase, score, runOranges, multiplier, banner, showWallet, 
       {phase === 'over' && (
         <View style={styles.panel}>
           <Text style={styles.title}>Oyun bitti</Text>
+          {newRecord ? (
+            <Text style={styles.record}>Yeni rekor!</Text>
+          ) : (
+            <Text style={styles.best}>En iyi: {best}</Text>
+          )}
           {runOranges > 0 && (
             <View style={styles.row}>
               <Text style={styles.message}>+{runOranges}</Text>
@@ -192,6 +209,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+  },
+  record: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#E2483D',
+  },
+  best: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#5A3B22',
   },
   title: {
     fontSize: 36,

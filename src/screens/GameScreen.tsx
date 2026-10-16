@@ -74,7 +74,15 @@ export default function GameScreen({ mode }: Props) {
   const [passengerCount, setPassengerCount] = useState(0);
   const [banner, setBanner] = useState<Banner | null>(null); // "Yeni mod: Balon" gibi
   const [kitMask, setKitMask] = useState(0); // Kasada hangi parçalar var (bit maskesi)
+  const [newRecord, setNewRecord] = useState(false);
   const addOranges = useGameStore((state) => state.addOranges);
+  const submitScore = useGameStore((state) => state.submitScore);
+  const best = useGameStore((state) => state.bestScores[mode.id]);
+
+  // Oyun bitti (JS tarafı): skoru kaydet, rekorsa panelde "Yeni rekor!" yazsın
+  const handleGameOver = (finalScore: number) => {
+    setNewRecord(submitScore(mode.id, finalScore));
+  };
 
   // UI thread tarafı: oyunun kendisi (her karede değişir)
   const playerX = width * PLAYER_X_RATIO;
@@ -122,6 +130,7 @@ export default function GameScreen({ mode }: Props) {
       splashX.set(playerX);
       splashTime.set(SPLASH_TIME);
       scheduleOnRN(hapticSplash);
+      scheduleOnRN(handleGameOver, scoreSV.get());
       scheduleOnRN(setPhase, 'over');
     };
 
@@ -283,6 +292,7 @@ export default function GameScreen({ mode }: Props) {
       scheduleOnRN(setPassengerCount, 0);
       scheduleOnRN(setBanner, null);
       scheduleOnRN(setKitMask, 0);
+      scheduleOnRN(setNewRecord, false);
       scheduleOnRN(setPhase, 'ready');
       return;
     }
@@ -358,6 +368,8 @@ export default function GameScreen({ mode }: Props) {
             banner={banner}
             showWallet={rules.items.some((item) => item.role === 'currency')}
             kit={rules.kit && { parts: rules.kit.parts, mask: kitMask }}
+            best={best}
+            newRecord={newRecord}
           />
         </View>
       </GestureDetector>

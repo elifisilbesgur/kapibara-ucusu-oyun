@@ -54,17 +54,39 @@ yardımcı gerekiyorsa `src/game/` içine ya da useFrameCallback'in içine koy.
 
 ```
 src/
-  game/        constants.ts, physics.ts, collision.ts, spawner.ts, passengers.ts
-  game/        ... animation.ts (itiş, pervane fazı, eğim)
-  art/         palette.ts (ortak palet + Sprite tipi), capybara.ts, world.ts (bambu, bulut, portakal),
-               passengers.ts (kuş, kaplumbağa, maymun; hepsi 8x6)
-  components/  Capybara.tsx, PixelSprite.tsx, Obstacle.tsx, Orange.tsx, Passenger.tsx, Hud.tsx
-  screens/     GameScreen.tsx, MenuScreen.tsx, GameOverScreen.tsx
-  store/       useGameStore.ts
-assets/        svg/, sounds/
+  app/         _layout.tsx, index.tsx (ana menü), game.tsx (?mode=capybara|burak)
+  game/        (worklet) constants, physics, collision, spawner, items, passengers, levels, kit,
+               animation, phase
+  modes/       types.ts (GameMode = rules + view), capybara.ts, burak.ts, index.ts (MODES)
+  art/         palette.ts (ortak palet + Sprite tipi), capybara.ts, passengers.ts, world.ts,
+               skies.ts, office.ts (metin ızgaraları); images.ts (PNG sprite'lar)
+  components/  Capybara, BurakPlayer, Obstacle (bambu), CableObstacle, Item, PartItem, Background,
+               Water, Confetti, Hud, GameMenu, PixelSprite, PixelImage
+  screens/     GameScreen.tsx (tek motor, `mode` prop'u alır)
+  store/       useGameStore.ts (portakal + moda göre rekor, AsyncStorage)
+  feedback/    haptics.ts
+assets/        sprites/ (Burak Uçuyor PNG'leri)
 ```
 
 Çarpışma: dikdörtgen kesişimi (`intersects(a: Box, b: Box)`).
+
+## Burak Uçuyor modu
+Kapibara ile aynı motor; fark yalnızca `src/modes/burak.ts` yapılandırmasında.
+- Karakter: `burak_normal` / `burak_happy` PNG (`assets/sprites/`). Parçaya değince 500 ms gülen yüz
+  (`joyTime`), yeni parça süreyi sıfırlar. Kapibarayla aynı eğim (`tiltFor`).
+- Görseller 1x PNG + Skia nearest filtre, TAM SAYI ölçek: Burak ve parçalar 2x (`BURAK_PIXEL`),
+  kablo/deniz/arka plan 3x (`PIXEL_SIZE`). Boyutlar `art/images.ts`'te sabit (Metro @6x/@8x'i
+  ekrana göre seçebilir; boyutu dosyadan okumayız).
+- Engel: CAT6 kablo çifti (`CableObstacle.tsx`). Uçlar `cable_head_down/up`, gövde `cable_body_tile`
+  ImageShader ile dikeyde döşenir. Geçit 260 → 200 (puan başına 1 dp daralır, engel doğarken belirlenir).
+  Çarpışma toleransı `obstacleInset` {x: 4px, y: 2px} (karo 18 px, kablo 9-13 px).
+- Parçalar (`PartItem.tsx`): RAM 1p, SSD 2p, CPU 3p, GPU 5p (nadir); %30'u geçidin içinde.
+  Engel başına 1 puan.
+- Kasa (`game/kit.ts`, bit maskesi): her türden bir parça → +10 bonus, konfeti, titreşim, kasa sıfırlanır.
+- Arka plan `OFFICE_SKY`: soluk mavi bilgisayarlar (kıyıda), süzülen disket/imleç/monitör.
+- Yolcular, portakal, mod evrimi ve gökyüzü değişimi bu modda yok (kurallarda tanımlı değil).
+- Ana menüde mod kartları; oyun içinde sol üstte hamburger menü (mod değiştir / ana menü).
+  Her modun rekoru ayrı (`bestScores`), oyun sonunda "Yeni rekor!".
 
 ## Geliştirme adımları
 1. Skia Canvas'ta bir daire çiz.
@@ -133,7 +155,7 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
   Bambu/tavan → sekip düşer (HIT_BOUNCE) + sarsıntı + ağır titreşim → suya değince sıçrama,
   `over`: gövde dikey aynalanır (sırtüstü), gözler kapalı, mod parçaları gizli, yolcular ayakların
   üstünde güneşlenir, suda sallanır. Portakal yiyince SMILE (0.9 sn). Titreşimler `feedback/haptics.ts`.
-- Burak Uçuyor modu (B1–B7) sürüyor; 9b (ses, kayan bulutlar) onun ardından.
+- Burak Uçuyor modu (B1–B7) tamam.
   - B1 tamam: `assets/sprites/` (1x + @6x/@8x PNG), `art/images.ts` (sanat pikseli boyutları sabit),
     `components/PixelImage.tsx` (Skia Image, FilterMode.Nearest; Group scale ile tam sayı büyütme).
     Geçici menü `app/index.tsx`, oyun `app/game.tsx?mode=...`, görsel testi `app/sprites.tsx`.
@@ -160,4 +182,9 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
     (bit maskesi: addToKit/hasPart/fullMask). Hud'da skorun altında KitBar (1x ikonlar, eksikler soluk).
     Tamamlanınca: +bonus, `Confetti.tsx` (28 piksel parçacık, sözde rastgele, CELEBRATION_TIME 1.2 sn),
     başarı titreşimi, banner. Banner artık { label, title } (yeni mod / kasa tamam).
-  - Sıradaki: B6 (ana menü, moda göre en yüksek skor, "Yeni rekor!").
+  - B6 tamam: `app/index.tsx` ana menü (sabah gökyüzü + deniz arka planı, mod kartları, önizleme,
+    rekor). Store'da `bestScores` + `submitScore` (özel `merge`: eski kayıtlar korunur). Oyun sonunda
+    `handleGameOver` skoru kaydeder; Hud "Yeni rekor!" / "En iyi: N". Görsel testi ekranı silindi.
+    Hamburger menüde "Ana menü".
+  - B7 tamam: bu dosyaya "Burak Uçuyor modu" bölümü, dizin ağacı güncellendi.
+- Sıradaki adım: 9b (ses — expo-audio, piksel tarzı efektler; parallax: kayan bulutlar).
