@@ -1,3 +1,5 @@
+import type { ItemRule, ModeRules } from '@/modes/types';
+
 import { intersects, type Box } from './collision';
 import {
   ITEM_SIZE,
@@ -9,10 +11,11 @@ import {
 import type { PassengerKind } from './passengers';
 import type { Obstacle } from './spawner';
 
-// Portakal/yolcu, engelin önündeki boşluğun tam ortasında durur
-// (önceki engelin sağ kenarı ile bu engelin sol kenarı arası).
+// Eşya ya engelin önündeki boşluğun tam ortasında (önceki engelin sağ kenarı ile bu engelin
+// sol kenarı arası) ya da geçidin içinde, engelle aynı hizada durur.
 export function itemCenterX(obstacle: Obstacle): number {
   'worklet';
+  if (obstacle.itemInGap) return obstacle.x + OBSTACLE_WIDTH / 2;
   return obstacle.x - (OBSTACLE_SPACING - OBSTACLE_WIDTH) / 2;
 }
 
@@ -28,35 +31,55 @@ export function itemBox(obstacle: Obstacle, grow = 0): Box {
   };
 }
 
-// Oyuncunun değdiği portakal ve yolcuları toplar.
-// Maymun sırttaysa portakallar uzaktan da toplanır; sırt doluysa yolcu alınmaz.
+function findItem(rules: ModeRules, id: string): ItemRule | undefined {
+  'worklet';
+  for (const item of rules.items) {
+    if (item.id === id) return item;
+  }
+  return undefined;
+}
+
+// Oyuncunun değdiği eşyaları toplar ve rollerine göre ayırır:
+// currency → kumbaraya, passenger → sırta (sırt doluysa alınmaz), part → puan.
+// Maymun sırttaysa para (portakal) uzaktan da toplanır.
 export function collectItems(
   obstacles: Obstacle[],
   player: Box,
   passengers: PassengerKind[],
-): { obstacles: Obstacle[]; oranges: number; newPassengers: PassengerKind[] } {
+  rules: ModeRules,
+): {
+  obstacles: Obstacle[];
+  currency: number;
+  newPassengers: PassengerKind[];
+  parts: string[];
+  partPoints: number;
+} {
   'worklet';
   const magnet = passengers.includes('monkey') ? MAGNET_RANGE : 0;
   let room = MAX_PASSENGERS - passengers.length;
-  let oranges = 0;
+  let currency = 0;
+  let partPoints = 0;
   const newPassengers: PassengerKind[] = [];
+  const parts: string[] = [];
 
   const updated = obstacles.map((obstacle) => {
-    const { item } = obstacle;
-    if (item === 'none') return obstacle;
+    const item = findItem(rules, obstacle.item);
+    if (!item) return obstacle; // 'none'
 
-    if (item === 'orange') {
+    if (item.role === 'currency') {
       if (!intersects(player, itemBox(obstacle, magnet))) return obstacle;
-      oranges++;
-      return { ...obstacle, item: 'none' as const };
+      currency++;
+    } else if (item.role === 'passenger') {
+      if (room === 0 || !intersects(player, itemBox(obstacle))) return obstacle;
+      room--;
+      newPassengers.push(item.id as PassengerKind);
+    } else {
+      if (!intersects(player, itemBox(obstacle))) return obstacle;
+      parts.push(item.id);
+      partPoints += item.points;
     }
-
-    // Buraya geldiyse item bir yolcu
-    if (room === 0 || !intersects(player, itemBox(obstacle))) return obstacle;
-    room--;
-    newPassengers.push(item);
-    return { ...obstacle, item: 'none' as const };
+    return { ...obstacle, item: 'none' };
   });
 
-  return { obstacles: updated, oranges, newPassengers };
+  return { obstacles: updated, currency, newPassengers, parts, partPoints };
 }

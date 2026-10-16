@@ -1,11 +1,13 @@
-import { LEVEL_TRANSITION, LEVELS } from './constants';
+import type { LevelRule } from '@/modes/types';
+
+import { LEVEL_TRANSITION } from './constants';
 
 // Skora göre seviye: eşiği geçilen en yüksek seviye.
-export function levelFor(score: number): number {
+export function levelFor(score: number, levels: LevelRule[]): number {
   'worklet';
   let level = 0;
-  for (let i = 0; i < LEVELS.length; i++) {
-    if (score >= LEVELS[i].minScore) level = i;
+  for (let i = 0; i < levels.length; i++) {
+    if (score >= levels[i].minScore) level = i;
   }
   return level;
 }

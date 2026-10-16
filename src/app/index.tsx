@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 export default function Menu() {
   return (
     <View style={styles.container}>
-      <Link href="/game" asChild>
+      <Link href="/game?mode=capybara" asChild>
         <Pressable style={styles.button}>
           <Text style={styles.label}>Kapibara</Text>
         </Pressable>

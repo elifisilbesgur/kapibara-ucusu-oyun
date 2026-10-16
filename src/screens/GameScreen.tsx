@@ -6,10 +6,7 @@ import { useDerivedValue, useFrameCallback, useSharedValue } from 'react-native-
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { Background } from '@/components/Background';
-import { Capybara } from '@/components/Capybara';
 import { Hud } from '@/components/Hud';
-import { Item } from '@/components/Item';
-import { Obstacle } from '@/components/Obstacle';
 import { Water } from '@/components/Water';
 import {
   hapticHit,
@@ -23,21 +20,15 @@ import { hitsAnyObstacle, isOutOfBounds, playerBox } from '@/game/collision';
 import {
   FLOAT_BOB,
   FLOAT_BOB_SPEED,
-  FLOAT_LIFT,
   HIT_BOUNCE,
   JUMP_VELOCITY,
   LEVEL_BANNER_TIME,
-  LEVELS,
   OBSTACLE_SPEED,
-  PLAYER_HITBOX_HEIGHT,
-  PLAYER_HITBOX_WIDTH,
   PLAYER_X_RATIO,
-  POINTS_PER_GATE,
   RESTART_DELAY_MS,
   SHAKE_AMOUNT,
   SHAKE_TIME,
   SHIELD_TIME,
-  SMILE_TIME,
   SPLASH_TIME,
   WATER_HEIGHT,
 } from '@/game/constants';
@@ -52,13 +43,25 @@ import {
 } from '@/game/passengers';
 import type { GamePhase } from '@/game/phase';
 import { frameDeltaSeconds, stepPosition, stepVelocity } from '@/game/physics';
-import { createObstacles, markPassed, obstacleCount, stepObstacles } from '@/game/spawner';
+import {
+  createObstacles,
+  gapSizeFor,
+  markPassed,
+  obstacleCount,
+  stepObstacles,
+} from '@/game/spawner';
+import type { GameMode } from '@/modes/types';
 import { useGameStore } from '@/store/useGameStore';
 
-export default function GameScreen() {
+type Props = {
+  mode: GameMode; // Hangi modla oynanıyor: kurallar (rules) + çizimler (view)
+};
+
+export default function GameScreen({ mode }: Props) {
+  const { rules, view } = mode;
   const { width, height } = useWindowDimensions();
   const waterY = height - WATER_HEIGHT; // Oyun alanının dibi: deniz yüzeyi
-  const floatY = waterY - FLOAT_LIFT; // Sırtüstü yüzerken gövde ortasının yüksekliği
+  const floatY = waterY - rules.floatLift; // Suda yüzerken gövde ortasının yüksekliği
 
   // React tarafı: sadece ekrandaki yazılar için (seyrek değişir)
   const [phase, setPhase] = useState<GamePhase>('ready');
@@ -72,7 +75,7 @@ export default function GameScreen() {
   const playerX = width * PLAYER_X_RATIO;
   const playerY = useSharedValue(waterY / 2);
   const velocity = useSharedValue(0);
-  const obstacles = useSharedValue(createObstacles(width, waterY));
+  const obstacles = useSharedValue(createObstacles(width, waterY, rules));
   const passengers = useSharedValue<PassengerKind[]>([]);
   const shieldTime = useSharedValue(0); // > 0 iken bambulara çarpmak zarar vermez
   const phaseSV = useSharedValue<GamePhase>('ready');
@@ -91,7 +94,7 @@ export default function GameScreen() {
   const splashX = useSharedValue(0);
   const splashTime = useSharedValue(0);
   const shakeTime = useSharedValue(0);
-  const smileTime = useSharedValue(0);
+  const joyTime = useSharedValue(0); // > 0 iken sevinçli yüz (gülümseme)
 
   // Suya değdi: sıçrat, sırtüstü yüzme pozisyonuna geç
   const fallIntoWater = () => {
@@ -116,7 +119,7 @@ export default function GameScreen() {
     levelBlend.set(stepLevelBlend(levelBlend.get(), level.get(), dt));
     splashTime.set(Math.max(0, splashTime.get() - dt));
     shakeTime.set(Math.max(0, shakeTime.get() - dt));
-    smileTime.set(Math.max(0, smileTime.get() - dt));
+    joyTime.set(Math.max(0, joyTime.get() - dt));
     if (bannerTime.get() > 0) {
       bannerTime.set(bannerTime.get() - dt);
       if (bannerTime.get() <= 0) scheduleOnRN(setBanner, null);
@@ -135,55 +138,66 @@ export default function GameScreen() {
       // Çarptı: dünya durdu, sadece kapibara düşüyor
       velocity.set(stepVelocity(velocity.get(), dt));
       playerY.set(stepPosition(playerY.get(), velocity.get(), dt));
-      if (playerY.get() + PLAYER_HITBOX_HEIGHT / 2 >= waterY) fallIntoWater();
+      if (playerY.get() + rules.hitbox.height / 2 >= waterY) fallIntoWater();
       return;
     }
 
     if (current !== 'playing') return; // Hazırken dünya donuk
 
     // Fizik: modun kendi hissi x yolcuların ağırlığı
-    const mode = LEVELS[level.get()];
-    const gravity = mode.gravity * gravityScale(passengers.get());
-    velocity.set(stepVelocity(velocity.get(), dt, gravity, mode.maxFall));
+    const stage = rules.levels[level.get()];
+    const gravity = stage.gravity * gravityScale(passengers.get());
+    velocity.set(stepVelocity(velocity.get(), dt, gravity, stage.maxFall));
     playerY.set(stepPosition(playerY.get(), velocity.get(), dt));
-    obstacles.set(stepObstacles(obstacles.get(), dt, waterY, mode.speed));
-    waterScroll.set(waterScroll.get() + OBSTACLE_SPEED * mode.speed * dt);
+    const gapSize = gapSizeFor(scoreSV.get(), rules); // Yeni gelen engeller bu boyla kurulur
+    obstacles.set(stepObstacles(obstacles.get(), dt, waterY, rules, stage.speed, gapSize));
+    waterScroll.set(waterScroll.get() + OBSTACLE_SPEED * stage.speed * dt);
     shieldTime.set(Math.max(0, shieldTime.get() - dt));
 
     // Puan: geçilen her engel, yolcu çarpanıyla
-    const scored = markPassed(obstacles.get(), playerX - PLAYER_HITBOX_WIDTH / 2);
+    const scored = markPassed(obstacles.get(), playerX - rules.hitbox.width / 2);
     obstacles.set(scored.obstacles);
+    let gained = 0;
     if (scored.newlyPassed > 0) {
       const multiplier = multiplierFor(passengers.get().length);
-      scoreSV.set(scoreSV.get() + Math.round(scored.newlyPassed * POINTS_PER_GATE * multiplier));
-      scheduleOnRN(setScore, scoreSV.get());
-
-      // Seviye atladı mı? Kapibara yeni moda evrimleşir
-      const newLevel = levelFor(scoreSV.get());
-      if (newLevel > level.get()) {
-        level.set(newLevel);
-        bannerTime.set(LEVEL_BANNER_TIME);
-        scheduleOnRN(setBanner, LEVELS[newLevel].name);
-        scheduleOnRN(hapticLevelUp);
-      }
+      gained += Math.round(scored.newlyPassed * rules.pointsPerGate * multiplier);
     }
 
-    const box = playerBox(playerX, playerY.get());
+    const box = playerBox(playerX, playerY.get(), rules.hitbox);
 
-    // Toplama: portakallar kumbaraya (ve minicik bir gülümseme), yolcular sırta
-    const picked = collectItems(obstacles.get(), box, passengers.get());
+    // Toplama: para kumbaraya (ve sevinç), yolcular sırta, parçalar puana (ve sevinç)
+    const picked = collectItems(obstacles.get(), box, passengers.get(), rules);
     obstacles.set(picked.obstacles);
-    if (picked.oranges > 0) {
-      runOrangesSV.set(runOrangesSV.get() + picked.oranges);
-      smileTime.set(SMILE_TIME);
+    if (picked.currency > 0) {
+      runOrangesSV.set(runOrangesSV.get() + picked.currency);
+      joyTime.set(rules.joyTime);
       scheduleOnRN(setRunOranges, runOrangesSV.get());
-      scheduleOnRN(addOranges, picked.oranges);
+      scheduleOnRN(addOranges, picked.currency);
       scheduleOnRN(hapticOrange);
     }
     if (picked.newPassengers.length > 0) {
       passengers.set([...passengers.get(), ...picked.newPassengers]);
       scheduleOnRN(setPassengerCount, passengers.get().length);
       scheduleOnRN(hapticPassenger);
+    }
+    if (picked.parts.length > 0) {
+      gained += picked.partPoints;
+      joyTime.set(rules.joyTime); // Yeni parça süreyi baştan başlatır
+      scheduleOnRN(hapticOrange);
+    }
+
+    if (gained > 0) {
+      scoreSV.set(scoreSV.get() + gained);
+      scheduleOnRN(setScore, scoreSV.get());
+
+      // Seviye atladı mı? (Kapibara modunda yeni moda evrimleşir)
+      const newLevel = levelFor(scoreSV.get(), rules.levels);
+      if (newLevel > level.get()) {
+        level.set(newLevel);
+        bannerTime.set(LEVEL_BANNER_TIME);
+        scheduleOnRN(setBanner, rules.levels[newLevel].name);
+        scheduleOnRN(hapticLevelUp);
+      }
     }
 
     // Suya değdi: doğrudan sırtüstü
@@ -193,7 +207,9 @@ export default function GameScreen() {
     }
 
     // Bambu ya da tavan: kaplumbağa kurtarabilir (sadece bambuda), yoksa sekip denize düş
-    const hitBamboo = shieldTime.get() === 0 && hitsAnyObstacle(box, obstacles.get(), waterY);
+    const hitBamboo =
+      shieldTime.get() === 0 &&
+      hitsAnyObstacle(box, obstacles.get(), waterY, rules.obstacleInset);
     if (hitBamboo && passengers.get().includes('turtle')) {
       passengers.set(removeTopmost(passengers.get(), 'turtle'));
       shieldTime.set(SHIELD_TIME);
@@ -220,7 +236,7 @@ export default function GameScreen() {
       // Her şeyi başa sar ve "hazır" ekranına dön
       playerY.set(waterY / 2);
       velocity.set(0);
-      obstacles.set(createObstacles(width, waterY));
+      obstacles.set(createObstacles(width, waterY, rules));
       passengers.set([]);
       shieldTime.set(0);
       level.set(0);
@@ -242,8 +258,8 @@ export default function GameScreen() {
       scheduleOnRN(setPhase, 'playing');
     }
 
-    // Zıplama gücü: modun kendi itişi x yolcular (kuş güçlendirir, diğerleri zayıflatır)
-    velocity.set(JUMP_VELOCITY * LEVELS[level.get()].jump * jumpScale(passengers.get()));
+    // Zıplama gücü: seviyenin kendi itişi x yolcular (kuş güçlendirir, diğerleri zayıflatır)
+    velocity.set(JUMP_VELOCITY * rules.levels[level.get()].jump * jumpScale(passengers.get()));
     thrust.set(1); // Alev büyüsün, pervane hızlansın, kanat çırpsın
   });
 
@@ -263,14 +279,19 @@ export default function GameScreen() {
       <View style={styles.container}>
         <Canvas style={styles.container}>
           <Group transform={shake}>
-            <Background width={width} height={height} levelBlend={levelBlend} />
+            <Background
+              width={width}
+              height={height}
+              skies={view.skies}
+              levelBlend={levelBlend}
+            />
             {Array.from({ length: slots }, (_, i) => (
-              <Obstacle key={i} obstacles={obstacles} index={i} screenHeight={height} />
+              <view.Obstacle key={i} obstacles={obstacles} index={i} screenHeight={height} />
             ))}
             {Array.from({ length: slots }, (_, i) => (
-              <Item key={i} obstacles={obstacles} index={i} clock={clock} />
+              <view.Item key={i} obstacles={obstacles} index={i} clock={clock} />
             ))}
-            <Capybara
+            <view.Player
               x={playerX}
               y={playerY}
               velocity={velocity}
@@ -281,7 +302,7 @@ export default function GameScreen() {
               shieldTime={shieldTime}
               level={level}
               phase={phaseSV}
-              smileTime={smileTime}
+              joyTime={joyTime}
             />
             {/* Deniz en önde: yüzen kapibaranın alt yarısı suyun içinde kalsın */}
             <Water

@@ -7,16 +7,11 @@ import { PixelSprite } from '@/components/PixelSprite';
 import { ITEM_BOB, ITEM_BOB_SPEED, ITEM_SIZE, PIXEL_SIZE } from '@/game/constants';
 import { itemCenterX } from '@/game/items';
 import { PASSENGER_KINDS } from '@/game/passengers';
-import type { ItemKind, Obstacle } from '@/game/spawner';
+import type { Obstacle } from '@/game/spawner';
+import type { ItemViewProps } from '@/modes/types';
 
-type Props = {
-  obstacles: SharedValue<Obstacle[]>;
-  index: number;
-  clock: SharedValue<number>;
-};
-
-// Engelin önündeki portakal ya da bekleyen yolcu. Hepsi çizilir, sadece doğru olan görünür.
-export function Item({ obstacles, index, clock }: Props) {
+// Kapibara modunun eşyası: portakal ya da bekleyen yolcu. Hepsi çizilir, sadece doğru olan görünür.
+export function Item({ obstacles, index, clock }: ItemViewProps) {
   const transform = useDerivedValue(() => {
     const obstacle = obstacles.get()[index];
     // Süzülme: sinüs dalgası, piksel ızgarasına yuvarlanmış (kesik kesik, retro his).
@@ -48,7 +43,7 @@ function ItemSprite({
   obstacles,
   index,
 }: {
-  kind: Exclude<ItemKind, 'none'>;
+  kind: 'orange' | (typeof PASSENGER_KINDS)[number];
   obstacles: SharedValue<Obstacle[]>;
   index: number;
 }) {

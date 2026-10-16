@@ -128,4 +128,11 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
   Bambu/tavan → sekip düşer (HIT_BOUNCE) + sarsıntı + ağır titreşim → suya değince sıçrama,
   `over`: gövde dikey aynalanır (sırtüstü), gözler kapalı, mod parçaları gizli, yolcular ayakların
   üstünde güneşlenir, suda sallanır. Portakal yiyince SMILE (0.9 sn). Titreşimler `feedback/haptics.ts`.
-- Sıradaki adım: 9b (ses — expo-audio, piksel tarzı efektler; parallax: kayan bulutlar).
+- Burak Uçuyor modu (B1–B7) sürüyor; 9b (ses, kayan bulutlar) onun ardından.
+  - B1 tamam: `assets/sprites/` (1x + @6x/@8x PNG), `art/images.ts` (sanat pikseli boyutları sabit),
+    `components/PixelImage.tsx` (Skia Image, FilterMode.Nearest; Group scale ile tam sayı büyütme).
+    Geçici menü `app/index.tsx`, oyun `app/game.tsx?mode=...`, görsel testi `app/sprites.tsx`.
+  - B2 tamam: `src/modes/` (types.ts, capybara.ts, index.ts). GameMode = rules (sadece veri, worklet'ler
+    okur) + view (bileşenler). GameScreen `mode` prop'u alır. Engeller kendi `gapSize`'ını taşır
+    (`gapSizeFor(score)`), eşyalar id + rol (currency/passenger/part), `itemInGap`, `obstacleInset`.
+  - Sıradaki: B3 (Burak karakteri + CAT6 kablo engeli).

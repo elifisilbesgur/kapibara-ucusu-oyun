@@ -3,11 +3,6 @@ import { MULTIPLIER_PER_PASSENGER, PASSENGER_STATS } from './constants';
 export type PassengerKind = 'bird' | 'turtle' | 'monkey';
 export const PASSENGER_KINDS: PassengerKind[] = ['bird', 'turtle', 'monkey'];
 
-export function randomPassenger(): PassengerKind {
-  'worklet';
-  return PASSENGER_KINDS[Math.floor(Math.random() * PASSENGER_KINDS.length)];
-}
-
 // Tüm yolcuların yerçekimi etkisi çarpılarak birikir: 2 kaplumbağa = 1.12 x 1.12
 export function gravityScale(passengers: PassengerKind[]): number {
   'worklet';

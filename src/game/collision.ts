@@ -1,9 +1,4 @@
-import {
-  OBSTACLE_GAP,
-  OBSTACLE_WIDTH,
-  PLAYER_HITBOX_HEIGHT,
-  PLAYER_HITBOX_WIDTH,
-} from './constants';
+import { OBSTACLE_WIDTH } from './constants';
 import type { Obstacle } from './spawner';
 
 // Ekrandaki bir dikdörtgen: sol üst köşesi (x, y) ve boyutları.
@@ -20,32 +15,40 @@ export function intersects(a: Box, b: Box): boolean {
   );
 }
 
-// Oyuncunun çarpışma kutusu: kapibaranın gövdesine oturan, ortası (cx, cy) olan dikdörtgen.
-export function playerBox(cx: number, cy: number): Box {
+// Oyuncunun çarpışma kutusu: gövdeye oturan, ortası (cx, cy) olan dikdörtgen (boyu moddan).
+export function playerBox(cx: number, cy: number, size: { width: number; height: number }): Box {
   'worklet';
   return {
-    x: cx - PLAYER_HITBOX_WIDTH / 2,
-    y: cy - PLAYER_HITBOX_HEIGHT / 2,
-    width: PLAYER_HITBOX_WIDTH,
-    height: PLAYER_HITBOX_HEIGHT,
+    x: cx - size.width / 2,
+    y: cy - size.height / 2,
+    width: size.width,
+    height: size.height,
   };
 }
 
-// Bir engelin üst ve alt bambusu iki ayrı kutu.
-export function obstacleBoxes(obstacle: Obstacle, screenHeight: number): [Box, Box] {
+// Bir engelin üst ve alt parçası iki ayrı kutu.
+// inset: kutular görselden bu kadar küçük (yanlardan ve geçide bakan uçtan) → "değmedim ki" olmasın.
+export function obstacleBoxes(obstacle: Obstacle, screenHeight: number, inset = 0): [Box, Box] {
   'worklet';
-  const topHeight = obstacle.gapY - OBSTACLE_GAP / 2;
-  const bottomY = obstacle.gapY + OBSTACLE_GAP / 2;
+  const topHeight = obstacle.gapY - obstacle.gapSize / 2 - inset;
+  const bottomY = obstacle.gapY + obstacle.gapSize / 2 + inset;
+  const x = obstacle.x + inset;
+  const width = OBSTACLE_WIDTH - inset * 2;
   return [
-    { x: obstacle.x, y: 0, width: OBSTACLE_WIDTH, height: topHeight },
-    { x: obstacle.x, y: bottomY, width: OBSTACLE_WIDTH, height: screenHeight - bottomY },
+    { x, y: 0, width, height: topHeight },
+    { x, y: bottomY, width, height: screenHeight - bottomY },
   ];
 }
 
-export function hitsAnyObstacle(player: Box, obstacles: Obstacle[], screenHeight: number): boolean {
+export function hitsAnyObstacle(
+  player: Box,
+  obstacles: Obstacle[],
+  screenHeight: number,
+  inset = 0,
+): boolean {
   'worklet';
   for (const obstacle of obstacles) {
-    const [top, bottom] = obstacleBoxes(obstacle, screenHeight);
+    const [top, bottom] = obstacleBoxes(obstacle, screenHeight, inset);
     if (intersects(player, top) || intersects(player, bottom)) return true;
   }
   return false;

@@ -1,7 +1,7 @@
 import { Group, Rect } from '@shopify/react-native-skia';
 import { useDerivedValue, type SharedValue } from 'react-native-reanimated';
 
-import { SKIES, type Sky } from '@/art/skies';
+import type { Sky } from '@/art/skies';
 import { MOON, STAR } from '@/art/world';
 import { PixelSprite } from '@/components/PixelSprite';
 import { PIXEL_SIZE } from '@/game/constants';
@@ -28,12 +28,13 @@ const MOON_POSITION = { x: 0.72, y: 0.06 };
 type Props = {
   width: number;
   height: number;
-  levelBlend: SharedValue<number>; // 0 → 4 arası yumuşak seviye
+  skies: Sky[]; // Modun seviye başına gökyüzleri
+  levelBlend: SharedValue<number>; // 0 → son seviye arası yumuşak seviye
 };
 
 // Her seviyenin gökyüzü üst üste çizilir; yenisi, levelBlend ilerledikçe görünür hale gelir.
-export function Background({ width, height, levelBlend }: Props) {
-  return SKIES.map((sky, level) => (
+export function Background({ width, height, skies, levelBlend }: Props) {
+  return skies.map((sky, level) => (
     <SkyLayer
       key={level}
       sky={sky}

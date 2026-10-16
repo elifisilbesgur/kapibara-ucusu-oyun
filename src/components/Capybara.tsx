@@ -22,6 +22,7 @@ import { tiltFor } from '@/game/animation';
 import { FLAME_FLICKER_FPS, MAX_PASSENGERS, PIXEL_SIZE } from '@/game/constants';
 import { PASSENGER_KINDS, type PassengerKind } from '@/game/passengers';
 import type { GamePhase } from '@/game/phase';
+import type { PlayerProps } from '@/modes/types';
 
 const FLAME_FRAMES = [...FLAME_SMALL, ...FLAME_BIG]; // 0-1 küçük, 2-3 büyük
 const PROPELLER_COUNT = PROPELLER_FRAMES.length;
@@ -34,20 +35,6 @@ const BLINK_FPS = 12; // Kalkan varken saniyede kaç kez yanıp söner
 // Seviye → mod: 0 yaprak, 1 balon, 2 pervaneli şapka, 3 kuş kanadı, 4 jetpack + şapka
 const MODE = { leaf: 0, balloon: 1, propeller: 2, wings: 3, jetpack: 4 };
 
-type Props = {
-  x: number;
-  y: SharedValue<number>;
-  velocity: SharedValue<number>;
-  thrust: SharedValue<number>;
-  propellerPhase: SharedValue<number>;
-  clock: SharedValue<number>;
-  passengers: SharedValue<PassengerKind[]>;
-  shieldTime: SharedValue<number>;
-  level: SharedValue<number>;
-  phase: SharedValue<GamePhase>;
-  smileTime: SharedValue<number>;
-};
-
 export function Capybara({
   x,
   y,
@@ -59,8 +46,8 @@ export function Capybara({
   shieldTime,
   level,
   phase,
-  smileTime,
-}: Props) {
+  joyTime,
+}: PlayerProps) {
   // Dönüşümler sırayla: yerine taşı → eğ → büyüt → gövde ortasını merkeze al
   const transform = useDerivedValue(() => [
     { translateX: x },
@@ -94,7 +81,7 @@ export function Capybara({
   const floatingOpacity = useDerivedValue<number>(() => (phase.get() === 'over' ? 1 : 0));
   const flyingOpacity = useDerivedValue<number>(() => (phase.get() === 'over' ? 0 : 1));
   const smileOpacity = useDerivedValue<number>(() =>
-    smileTime.get() > 0 && phase.get() !== 'over' ? 1 : 0,
+    joyTime.get() > 0 && phase.get() !== 'over' ? 1 : 0,
   );
 
   // Kaplumbağa çarpmayı karşıladıysa kısa süre yanıp sön

@@ -1,19 +1,14 @@
 import { Group } from '@shopify/react-native-skia';
 import { useMemo } from 'react';
-import { useDerivedValue, type SharedValue } from 'react-native-reanimated';
+import { useDerivedValue } from 'react-native-reanimated';
 
 import { BAMBOO_SEGMENT_HEIGHT, bambooStalk } from '@/art/world';
 import { PixelSprite } from '@/components/PixelSprite';
-import { OBSTACLE_GAP, PIXEL_SIZE } from '@/game/constants';
-import type { Obstacle as ObstacleData } from '@/game/spawner';
+import { PIXEL_SIZE } from '@/game/constants';
+import type { ObstacleViewProps } from '@/modes/types';
 
-type Props = {
-  obstacles: SharedValue<ObstacleData[]>;
-  index: number; // Dizideki kaçıncı engeli çizeceğiz
-  screenHeight: number;
-};
-
-export function Obstacle({ obstacles, index, screenHeight }: Props) {
+// Kapibara modunun engeli: bambu çifti
+export function Obstacle({ obstacles, index, screenHeight }: ObstacleViewProps) {
   // Ekran boyunu kaplayacak kadar uzun bir kamış (bir kez hazırlanır)
   const stalk = useMemo(() => {
     const segments = Math.ceil(screenHeight / (BAMBOO_SEGMENT_HEIGHT * PIXEL_SIZE));
@@ -25,7 +20,7 @@ export function Obstacle({ obstacles, index, screenHeight }: Props) {
     const obstacle = obstacles.get()[index];
     return [
       { translateX: obstacle.x },
-      { translateY: obstacle.gapY + OBSTACLE_GAP / 2 },
+      { translateY: obstacle.gapY + obstacle.gapSize / 2 },
       { scale: PIXEL_SIZE },
     ];
   });
@@ -35,7 +30,7 @@ export function Obstacle({ obstacles, index, screenHeight }: Props) {
     const obstacle = obstacles.get()[index];
     return [
       { translateX: obstacle.x },
-      { translateY: obstacle.gapY - OBSTACLE_GAP / 2 },
+      { translateY: obstacle.gapY - obstacle.gapSize / 2 },
       { scaleX: PIXEL_SIZE },
       { scaleY: -PIXEL_SIZE },
     ];
