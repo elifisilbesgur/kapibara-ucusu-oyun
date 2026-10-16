@@ -13,11 +13,13 @@ type GameStore = {
   totalOranges: number;
   bestScores: Record<ModeId, number>; // Her modun rekoru ayrı
   soundOn: boolean;
+  hapticsOn: boolean;
   friends: Partial<Record<PassengerKind, FriendEntry>>; // Arkadaş defteri
   addOranges: (count: number) => void;
   // Sırta binen yolcuları deftere işler; İLK KEZ tanışılanları döndürür
   meetFriends: (kinds: PassengerKind[]) => PassengerKind[];
   toggleSound: () => void;
+  toggleHaptics: () => void;
   // Biten oyunun skorunu kaydeder; rekor kırıldıysa true döner
   submitScore: (mode: ModeId, score: number) => boolean;
 };
@@ -42,6 +44,8 @@ export const useGameStore = create<GameStore>()(
         return fresh;
       },
       toggleSound: () => set((state) => ({ soundOn: !state.soundOn })),
+      hapticsOn: true,
+      toggleHaptics: () => set((state) => ({ hapticsOn: !state.hapticsOn })),
       addOranges: (count) => set((state) => ({ totalOranges: state.totalOranges + count })),
       submitScore: (mode, score) => {
         const previous = get().bestScores[mode] ?? 0;

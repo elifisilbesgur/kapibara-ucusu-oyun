@@ -65,7 +65,7 @@ src/
   screens/     GameScreen.tsx (tek motor, `mode` prop'u alır)
   store/       useGameStore.ts (portakal + moda göre rekor, AsyncStorage)
   feedback/    haptics.ts, sounds.ts
-scripts/       make-sounds.py (ses efektlerini üretir)
+scripts/       make-sounds.py (ses efektleri), make-icons.py (ikon + açılış görselleri)
 assets/        sprites/ (Burak Uçuyor PNG'leri), sounds/ (üretilmiş WAV'lar)
 ```
 
@@ -230,4 +230,11 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
   yolcular + gülümseme (Burak modunda Burak), alt şeritte mod · seviye · tarih. Paylaş:
   `canvasRef.makeImageSnapshotAsync()` → `encodeToBytes(PNG)` → `File(Paths.cache)` → `Sharing.shareAsync`.
   `handleGameOver(score, passengers, level)`. Tarih biçimi `utils/formatDate.ts` (defter de kullanır).
-- Sıradaki adım: 10 (cila: titreşim aç/kapa, ikon, açılış ekranı).
+- Adım 10 tamam (cila): ☰ menüde kalıcı Titreşim aç/kapa (`hapticsOn`). İkon ve açılış görselleri
+  `scripts/make-icons.py` ile oyunun piksel çizimlerinden üretilir (icon 1024, Android uyarlanabilir
+  ön plan/arka plan/tek renk, splash-icon, favicon). app.json: ad "Kapibara Uçuşu", `userInterfaceStyle`
+  light, iOS şablon `.icon` yerine icon.png, splash arka planı #BFE6F2. NOT: ikon/açılış ekranı Expo Go'da
+  görünmez, ancak EAS build'de. Şablon artıkları (logolar, tabIcons, reset-project.js) silindi, README yazıldı.
+  expo-doctor: expo-audio'nun peer bağımlılığı `expo-asset` kuruldu → 21/21.
+- İLK SÜRÜMÜN YOL HARİTASI TAMAM (1–16 + Burak Uçuyor). Sıradaki: "Sonraki sürümler" listesinden seçim
+  ya da EAS ile ilk build.

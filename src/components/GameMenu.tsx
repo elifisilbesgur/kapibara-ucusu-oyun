@@ -19,6 +19,8 @@ export function GameMenu({ currentMode, onOpenChange }: Props) {
   const [open, setOpen] = useState(false);
   const soundOn = useGameStore((state) => state.soundOn);
   const toggleSound = useGameStore((state) => state.toggleSound);
+  const hapticsOn = useGameStore((state) => state.hapticsOn);
+  const toggleHaptics = useGameStore((state) => state.toggleHaptics);
 
   const setMenuOpen = (value: boolean) => {
     setOpen(value);
@@ -83,6 +85,15 @@ export function GameMenu({ currentMode, onOpenChange }: Props) {
         >
           <Text style={styles.itemText}>Ses</Text>
           <Text style={styles.itemText}>{soundOn ? 'Açık' : 'Kapalı'}</Text>
+        </Pressable>
+        <Pressable
+          style={styles.item}
+          onPress={toggleHaptics}
+          accessibilityRole="switch"
+          accessibilityState={{ checked: hapticsOn }}
+        >
+          <Text style={styles.itemText}>Titreşim</Text>
+          <Text style={styles.itemText}>{hapticsOn ? 'Açık' : 'Kapalı'}</Text>
         </Pressable>
         <Pressable style={styles.close} onPress={() => setMenuOpen(false)}>
           <Text style={styles.closeText}>Devam et</Text>
