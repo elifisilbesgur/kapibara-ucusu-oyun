@@ -1,17 +1,19 @@
-import { Canvas, Circle, Fill } from '@shopify/react-native-skia';
+import { Canvas, Fill } from '@shopify/react-native-skia';
 import { useState } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useFrameCallback, useSharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
+import { Capybara } from '@/components/Capybara';
 import { Hud, type GamePhase } from '@/components/Hud';
 import { Obstacle } from '@/components/Obstacle';
 import { hitsAnyObstacle, isOutOfBounds, playerBox } from '@/game/collision';
+import { stepPropeller, stepThrust } from '@/game/animation';
 import {
   COLORS,
   JUMP_VELOCITY,
-  PLAYER_RADIUS,
+  PLAYER_HITBOX_WIDTH,
   PLAYER_X_RATIO,
   RESTART_DELAY_MS,
 } from '@/game/constants';
@@ -34,21 +36,31 @@ export default function GameScreen() {
   const scoreSV = useSharedValue(0);
   const msSinceGameOver = useSharedValue(0);
 
+  // Sadece görünüm için: alev, pervane, titreme
+  const thrust = useSharedValue(0);
+  const propellerPhase = useSharedValue(0);
+  const clock = useSharedValue(0);
+
   useFrameCallback((frame) => {
+    const dt = frameDeltaSeconds(frame.timeSincePreviousFrame);
+
+    // Animasyonlar her fazda çalışır (beklerken de pervane dönsün)
+    clock.set(clock.get() + dt);
+    thrust.set(stepThrust(thrust.get(), dt));
+    propellerPhase.set(stepPropeller(propellerPhase.get(), thrust.get(), dt));
+
     if (phaseSV.get() === 'over') {
       msSinceGameOver.set(msSinceGameOver.get() + (frame.timeSincePreviousFrame ?? 0));
       return;
     }
     if (phaseSV.get() !== 'playing') return; // Hazırken dünya donuk
 
-    const dt = frameDeltaSeconds(frame.timeSincePreviousFrame);
-
     velocity.set(stepVelocity(velocity.get(), dt));
     playerY.set(stepPosition(playerY.get(), velocity.get(), dt));
     obstacles.set(stepObstacles(obstacles.get(), dt, height));
 
     // Puan: geçilen engeller
-    const scored = markPassed(obstacles.get(), playerX - PLAYER_RADIUS);
+    const scored = markPassed(obstacles.get(), playerX - PLAYER_HITBOX_WIDTH / 2);
     obstacles.set(scored.obstacles);
     if (scored.newlyPassed > 0) {
       scoreSV.set(scoreSV.get() + scored.newlyPassed);
@@ -56,7 +68,7 @@ export default function GameScreen() {
     }
 
     // Çarpışma: yer, tavan ya da bambu
-    const box = playerBox(playerX, playerY.get(), PLAYER_RADIUS);
+    const box = playerBox(playerX, playerY.get());
     if (isOutOfBounds(box, height) || hitsAnyObstacle(box, obstacles.get(), height)) {
       phaseSV.set('over');
       msSinceGameOver.set(0);
@@ -87,6 +99,7 @@ export default function GameScreen() {
     }
 
     velocity.set(JUMP_VELOCITY);
+    thrust.set(1); // Alev büyüsün, pervane hızlansın
   });
 
   return (
@@ -97,7 +110,14 @@ export default function GameScreen() {
           {Array.from({ length: obstacleCount(width) }, (_, i) => (
             <Obstacle key={i} obstacles={obstacles} index={i} screenHeight={height} />
           ))}
-          <Circle cx={playerX} cy={playerY} r={PLAYER_RADIUS} color={COLORS.player} />
+          <Capybara
+            x={playerX}
+            y={playerY}
+            velocity={velocity}
+            thrust={thrust}
+            propellerPhase={propellerPhase}
+            clock={clock}
+          />
         </Canvas>
         <Hud phase={phase} score={score} />
       </View>

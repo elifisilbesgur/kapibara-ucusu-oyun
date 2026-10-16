@@ -8,7 +8,9 @@ Ton: sinir bozucu ama sakinleştirici; kapibaranın sakinliği merkezde.
 - Tombul, kahverengi, büyük gözlü, pembe yanaklı kapibara.
 - Sırtında jetpack: dokununca alev büyür, bırakınca küçülür.
 - Başında pervaneli şapka: pervane sürekli döner, dokunuşta hızlanır.
-- Karakter tek görsel (SVG); alev, pervane ve gövde eğimi Skia'da ayrı parçalar olarak kodla oynatılır.
+- Görsel stil: PİKSEL ART (Flippy Nyan'dan stil ilhamı; karakter/görsel kopyalanmaz).
+  Çizimler `src/art/` altında metin ızgarası (her harf bir renk, PALETTE). `PixelSprite` ızgarayı
+  renk başına tek Skia Path'e çevirir, antiAlias kapalı. Alev ve pervane ayrı kare dizileri (frame).
 - Yükselirken burun hafif yukarı, düşerken aşağı döner.
 
 ## İlk sürüm mekanikleri
@@ -45,7 +47,9 @@ Fizik ve kural mantığı `src/game/` altında saf TypeScript (worklet), React't
 ```
 src/
   game/        constants.ts, physics.ts, collision.ts, spawner.ts, passengers.ts
-  components/  Capybara.tsx, Obstacle.tsx, Orange.tsx, Passenger.tsx, Hud.tsx
+  game/        ... animation.ts (itiş, pervane fazı, eğim)
+  art/         capybara.ts (piksel ızgaraları + palet)
+  components/  Capybara.tsx, PixelSprite.tsx, Obstacle.tsx, Orange.tsx, Passenger.tsx, Hud.tsx
   screens/     GameScreen.tsx, MenuScreen.tsx, GameOverScreen.tsx
   store/       useGameStore.ts
 assets/        svg/, sounds/
@@ -81,4 +85,8 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
 - Adım 5 tamam: `collision.ts` (Box, intersects, playerBox, obstacleBoxes, isOutOfBounds),
   `markPassed` ile skor, `components/Hud.tsx` (skor + mesajlar). Faz: ready → playing → over → ready.
   Oyun durumu UI thread'de shared value; React state sadece Hud için, `scheduleOnRN` ile güncelleniyor.
-- Sıradaki adım: 6 (daireyi jetpackli, şapkalı kapibarayla değiştir).
+- Adım 6 tamam (piksel art): kapibara + jetpack + pervaneli şapka `src/art/capybara.ts`'te.
+  Eğim `tiltFor(velocity)`, alev `thrust` (dokununca 1, söner) ile küçük/büyük + titreme,
+  pervane `propellerPhase` ile 4 kare. Çarpışma kutusu artık dikdörtgen (PLAYER_HITBOX_WIDTH/HEIGHT).
+  Bambular hâlâ düz yeşil dikdörtgen — piksel art'a çevrilecek.
+- Sıradaki adım: 7 (portakallar) — istenirse önce bambu/arka planı piksel art'a çevir.

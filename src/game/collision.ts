@@ -1,4 +1,9 @@
-import { OBSTACLE_GAP, OBSTACLE_WIDTH, PLAYER_HITBOX_INSET } from './constants';
+import {
+  OBSTACLE_GAP,
+  OBSTACLE_WIDTH,
+  PLAYER_HITBOX_HEIGHT,
+  PLAYER_HITBOX_WIDTH,
+} from './constants';
 import type { Obstacle } from './spawner';
 
 // Ekrandaki bir dikdörtgen: sol üst köşesi (x, y) ve boyutları.
@@ -15,11 +20,15 @@ export function intersects(a: Box, b: Box): boolean {
   );
 }
 
-// Oyuncunun çarpışma kutusu: dairenin içine oturan, biraz küçültülmüş kare.
-export function playerBox(cx: number, cy: number, radius: number): Box {
+// Oyuncunun çarpışma kutusu: kapibaranın gövdesine oturan, ortası (cx, cy) olan dikdörtgen.
+export function playerBox(cx: number, cy: number): Box {
   'worklet';
-  const half = radius - PLAYER_HITBOX_INSET;
-  return { x: cx - half, y: cy - half, width: half * 2, height: half * 2 };
+  return {
+    x: cx - PLAYER_HITBOX_WIDTH / 2,
+    y: cy - PLAYER_HITBOX_HEIGHT / 2,
+    width: PLAYER_HITBOX_WIDTH,
+    height: PLAYER_HITBOX_HEIGHT,
+  };
 }
 
 // Bir engelin üst ve alt bambusu iki ayrı kutu.
