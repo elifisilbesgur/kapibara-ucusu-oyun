@@ -29,8 +29,21 @@ export const PALETTE: Record<string, string> = {
   U: '#A6CF72', // kaplumbağa derisi
   m: '#7A4A2A', // maymun tüyü
   f: '#EBC79E', // maymun yüzü
-  // Gökyüzü
-  c: '#D4EDF5', // bulut gölgesi
+  // Modlar
+  q: '#A3271F', // balon çerçeve (koyu kırmızı)
+  n: '#7A5A44', // balon ipi
+  V: '#F3EEE0', // kuş kanadı (krem)
+  v: '#BDB39A', // kuş kanadı gölge/çerçeve
+  // Gökyüzü ve bulutlar (her seviyenin kendi bulut rengi)
+  c: '#D4EDF5', // gündüz bulut gölgesi
+  Q: '#FFE3D0', // akşam bulutu
+  j: '#F2B49A', // akşam bulut gölgesi
+  Z: '#B48BB8', // alacakaranlık bulutu
+  z: '#8C6A9E', // alacakaranlık bulut gölgesi
+  X: '#34437E', // gece bulutu
+  x: '#27336A', // gece bulut gölgesi
+  A: '#F6EDC4', // ay / yıldız
+  a: '#D8CA94', // ay gölgesi
 };
 
 export type Sprite = {

@@ -47,7 +47,15 @@ export const PROPELLER_FPS = 10; // Pervane sakinken saniyede kaç kare döner
 export const PROPELLER_BOOST_FPS = 20; // Dokununca bu kadar ek hız
 export const FLAME_FLICKER_FPS = 12; // Alev saniyede kaç kez titrer
 
-export const COLORS = {
-  // Gökyüzü yukarıdan aşağı bantlar halinde açılır (piksel art usulü degrade)
-  skyBands: ['#7FC8E3', '#94D3E9', '#AADDEE', '#BFE6F2', '#D3EEF5'],
-};
+// Seviyeler: skor eşiği geçilince kapibara yeni moda evrimleşir, gökyüzü değişir.
+// gravity/jump: GRAVITY ve JUMP_VELOCITY ile çarpılır. maxFall: en yüksek düşüş hızı.
+// speed: bambuların kayma hızı çarpanı (oyun yavaş yavaş hızlanır).
+export const LEVELS = [
+  { name: 'Yaprak kanat', minScore: 0, gravity: 0.85, jump: 0.85, maxFall: 700, speed: 1 },
+  { name: 'Balon', minScore: 25, gravity: 0.6, jump: 0.72, maxFall: 450, speed: 1.06 },
+  { name: 'Pervaneli şapka', minScore: 75, gravity: 0.95, jump: 0.95, maxFall: 850, speed: 1.12 },
+  { name: 'Kuş kanatları', minScore: 150, gravity: 1.05, jump: 1.05, maxFall: 900, speed: 1.18 },
+  { name: 'Jetpack + şapka', minScore: 300, gravity: 1.1, jump: 1.1, maxFall: 950, speed: 1.25 },
+];
+export const LEVEL_TRANSITION = 1.5; // Gökyüzü yeni seviyeye bu kadar saniyede geçer
+export const LEVEL_BANNER_TIME = 1.8; // "Yeni mod" yazısı bu kadar saniye görünür

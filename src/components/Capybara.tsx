@@ -1,7 +1,19 @@
 import { Group } from '@shopify/react-native-skia';
+import type { ReactNode } from 'react';
 import { useDerivedValue, type SharedValue } from 'react-native-reanimated';
 
-import { BODY, FLAME_BIG, FLAME_SMALL, PIVOT, PROPELLER_FRAMES } from '@/art/capybara';
+import {
+  BALLOON,
+  BODY,
+  CAP,
+  FLAME_BIG,
+  FLAME_SMALL,
+  JETPACK,
+  LEAF_FRAMES,
+  PIVOT,
+  PROPELLER_FRAMES,
+  WING_FRAMES,
+} from '@/art/capybara';
 import { PASSENGER_PIXEL_HEIGHT, PASSENGER_SPRITES } from '@/art/passengers';
 import { PixelSprite, SpriteFrames } from '@/components/PixelSprite';
 import { tiltFor } from '@/game/animation';
@@ -10,8 +22,12 @@ import { PASSENGER_KINDS, type PassengerKind } from '@/game/passengers';
 
 const FLAME_FRAMES = [...FLAME_SMALL, ...FLAME_BIG]; // 0-1 küçük, 2-3 büyük
 const PROPELLER_COUNT = PROPELLER_FRAMES.length;
-const STACK_BASE_Y = 4; // Yığının dibi: jetpack'in üst kenarı (gövde ızgarasında satır 4)
+const STACK_X = 3; // Yolcu yığınının sol kenarı (gövde ızgarasında sütun 3)
+const STACK_BASE_Y = 4; // Yığının dibi: sırtın üst kenarı (satır 4)
 const BLINK_FPS = 12; // Kalkan varken saniyede kaç kez yanıp söner
+
+// Seviye → mod: 0 yaprak, 1 balon, 2 pervaneli şapka, 3 kuş kanadı, 4 jetpack + şapka
+const MODE = { leaf: 0, balloon: 1, propeller: 2, wings: 3, jetpack: 4 };
 
 type Props = {
   x: number;
@@ -22,6 +38,7 @@ type Props = {
   clock: SharedValue<number>;
   passengers: SharedValue<PassengerKind[]>;
   shieldTime: SharedValue<number>;
+  level: SharedValue<number>;
 };
 
 export function Capybara({
@@ -33,6 +50,7 @@ export function Capybara({
   clock,
   passengers,
   shieldTime,
+  level,
 }: Props) {
   // Dönüşümler sırayla: yerine taşı → eğ → büyüt → gövde ortasını merkeze al
   const transform = useDerivedValue(() => [
@@ -54,6 +72,9 @@ export function Capybara({
     return (thrust.get() > 0.3 ? 2 : 0) + flicker;
   });
 
+  // Yaprak ve kanat: dokununca aşağı çırpılır (kare 1), sonra yukarı döner (kare 0)
+  const flapFrame = useDerivedValue<number>(() => (thrust.get() > 0.3 ? 1 : 0));
+
   // Kaplumbağa çarpmayı karşıladıysa kısa süre yanıp sön
   const opacity = useDerivedValue(() => {
     if (shieldTime.get() <= 0) return 1;
@@ -62,12 +83,35 @@ export function Capybara({
 
   return (
     <Group transform={transform} opacity={opacity}>
-      <SpriteFrames frames={FLAME_FRAMES} current={flameFrame} />
       <PixelSprite sprite={BODY} />
-      <SpriteFrames frames={PROPELLER_FRAMES} current={propellerFrame} />
+
+      <Gear modes={[MODE.leaf]} level={level}>
+        <SpriteFrames frames={LEAF_FRAMES} current={flapFrame} />
+      </Gear>
+      <Gear modes={[MODE.balloon]} level={level}>
+        <PixelSprite sprite={BALLOON} />
+      </Gear>
+      <Gear modes={[MODE.wings]} level={level}>
+        <SpriteFrames frames={WING_FRAMES} current={flapFrame} />
+      </Gear>
+      <Gear modes={[MODE.jetpack]} level={level}>
+        <SpriteFrames frames={FLAME_FRAMES} current={flameFrame} />
+        <PixelSprite sprite={JETPACK} />
+      </Gear>
+      <Gear modes={[MODE.propeller, MODE.jetpack]} level={level}>
+        <PixelSprite sprite={CAP} />
+        <SpriteFrames frames={PROPELLER_FRAMES} current={propellerFrame} />
+      </Gear>
+
       {Array.from({ length: MAX_PASSENGERS }, (_, slot) => (
         // Her kat bir öncekinin tam üstünde
-        <Group key={slot} transform={[{ translateY: STACK_BASE_Y - PASSENGER_PIXEL_HEIGHT * (slot + 1) }]}>
+        <Group
+          key={slot}
+          transform={[
+            { translateX: STACK_X },
+            { translateY: STACK_BASE_Y - PASSENGER_PIXEL_HEIGHT * (slot + 1) },
+          ]}
+        >
           {PASSENGER_KINDS.map((kind) => (
             <StackedPassenger key={kind} kind={kind} slot={slot} passengers={passengers} />
           ))}
@@ -75,6 +119,20 @@ export function Capybara({
       ))}
     </Group>
   );
+}
+
+// Sadece belirtilen modlarda görünen parça (şapka, balon, kanat...)
+function Gear({
+  modes,
+  level,
+  children,
+}: {
+  modes: number[];
+  level: SharedValue<number>;
+  children: ReactNode;
+}) {
+  const opacity = useDerivedValue<number>(() => (modes.includes(level.get()) ? 1 : 0));
+  return <Group opacity={opacity}>{children}</Group>;
 }
 
 // Yığının `slot` katında `kind` yolcusu varsa görünür

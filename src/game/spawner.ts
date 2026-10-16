@@ -76,11 +76,17 @@ export function createObstacles(screenWidth: number, screenHeight: number): Obst
 
 // Her karede engelleri sola kaydırır. Soldan tamamen çıkan engel,
 // sıranın en arkasına (sağa) taşınır ve yeniden rastgele kurulur.
-export function stepObstacles(obstacles: Obstacle[], dt: number, screenHeight: number): Obstacle[] {
+// speedScale: seviyeyle artan hız çarpanı.
+export function stepObstacles(
+  obstacles: Obstacle[],
+  dt: number,
+  screenHeight: number,
+  speedScale = 1,
+): Obstacle[] {
   'worklet';
   const loopLength = obstacles.length * OBSTACLE_SPACING;
   return obstacles.map((obstacle) => {
-    const x = obstacle.x - OBSTACLE_SPEED * dt;
+    const x = obstacle.x - OBSTACLE_SPEED * speedScale * dt;
     if (x + OBSTACLE_WIDTH < 0) {
       return newObstacle(x + loopLength, screenHeight);
     }

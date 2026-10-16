@@ -29,6 +29,14 @@ export function bambooStalk(segments: number): Sprite {
   return { rows, offsetX: 0, offsetY: 0 };
 }
 
+// Bir çizimin harflerini başka harflerle değiştirir (aynı şekil, farklı renk).
+export function recolor(sprite: Sprite, colors: Record<string, string>): Sprite {
+  return {
+    ...sprite,
+    rows: sprite.rows.map((row) => [...row].map((char) => colors[char] ?? char).join('')),
+  };
+}
+
 export const CLOUD: Sprite = {
   offsetX: 0,
   offsetY: 0,
@@ -57,3 +65,23 @@ export const ORANGE: Sprite = {
   ],
 };
 export const ORANGE_PIXEL_SIZE = ORANGE.rows.length;
+
+export const MOON: Sprite = {
+  offsetX: 0,
+  offsetY: 0,
+  rows: [
+    '..AAA..',
+    '.AAAaA.',
+    'AAAAAAA',
+    'AaAAAAA',
+    'AAAAAaA',
+    '.AAAAA.',
+    '..AAA..',
+  ],
+};
+
+export const STAR: Sprite = {
+  offsetX: 0,
+  offsetY: 0,
+  rows: ['.A.', 'AAA', '.A.'],
+};

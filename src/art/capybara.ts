@@ -2,27 +2,95 @@ import type { Sprite } from './palette';
 
 // Kapibara piksel çizimleri. Her satır bir piksel sırası, her harf bir renk (bkz. palette.ts).
 // Tüm parçalar aynı ızgarada konumlanır: offsetX/offsetY gövdenin sol üstüne göre.
+// Gövde çıplak; modlar (yaprak, balon, şapka, kanat, jetpack) üstüne giydirilir.
 
-// Gövde + jetpack + şapka. Sağa bakıyor, jetpack sırtta (solda).
 export const BODY: Sprite = {
   offsetX: 0,
   offsetY: 0,
   rows: [
-    '..............KKKK....',
-    '.........KK..KYRYRK...',
-    '........KBLKKKKKKKKKK.',
+    '......................',
+    '.........KK...........',
+    '........KBLKKKKKKKKK..',
     '........KKKBBBBBBBBK..',
-    '..KKKKKKBBBBBBBBBBBBK.',
-    '.KgGGgKBBBBBBBBBBEWBK.',
-    '.KgGRgKBBBBBBBBBBEEBBK',
-    '.KgGRgKBBBBBBBBBBBBBNK',
-    '.KgGGgKBBBBBBBBBBPPBBK',
-    '.KgGGgKBBBBBBBBBBBBBBK',
-    '..KggKLBBBBBBBBBBBBBK.',
-    '..KKKKLLLLLLLBBBBBBK..',
-    '...KK.KLLLLLLLLLLKK...',
+    '......KKBBBBBBBBBBBBK.',
+    '......KBBBBBBBBBBEWBK.',
+    '......KBBBBBBBBBBEEBBK',
+    '......KBBBBBBBBBBBBBNK',
+    '......KBBBBBBBBBBPPBBK',
+    '......KBBBBBBBBBBBBBBK',
+    '.....KLBBBBBBBBBBBBBK.',
+    '.....KLLLLLLLBBBBBBK..',
+    '......KLLLLLLLLLLKK...',
     '.......KBK....KBK.....',
     '.......KKK....KKK.....',
+  ],
+};
+
+// Dönme ve konumlama merkezi: gövdenin ortası (piksel cinsinden).
+export const PIVOT = { x: 14, y: 9 };
+
+// --- Mod 0: Yaprak kanat. İki kare: kanat yukarıda / dokununca aşağı çırpılmış.
+export const LEAF_FRAMES: Sprite[] = [
+  {
+    offsetX: 3,
+    offsetY: -3,
+    rows: [
+      '.......DD.',
+      '......DMMD',
+      '..DD.DMHMD',
+      '.DSSDMHMD.',
+      'DSSSDMMD..',
+      'DSSDDDD...',
+      '.DD.......',
+    ],
+  },
+  {
+    offsetX: 2,
+    offsetY: 1,
+    rows: [
+      'DDDD......',
+      'DSSSDDD...',
+      '.DSSDMMDD.',
+      '..DDMHHMMD',
+      '....DDMMD.',
+      '......DD..',
+    ],
+  },
+];
+
+// --- Mod 1: Balon. İpi sırta bağlı.
+export const BALLOON: Sprite = {
+  offsetX: 1,
+  offsetY: -15,
+  rows: [
+    '..qqqq..',
+    '.qRRRRq.',
+    'qRPRRRRq',
+    'qRPRRRRq',
+    'qRRRRRRq',
+    '.qRRRRq.',
+    '..qqqq..',
+    '...qq...',
+    '....n...',
+    '....n...',
+    '.....n..',
+    '.....n..',
+    '......n.',
+    '......n.',
+    '.......n',
+    '.......n',
+    '.......n',
+  ],
+};
+
+// --- Mod 2 ve 4: Pervaneli şapka
+export const CAP: Sprite = {
+  offsetX: 11,
+  offsetY: 0,
+  rows: [
+    '...KKKK...',
+    '..KYRYRK..',
+    'KKKKKKKKKK',
   ],
 };
 
@@ -36,6 +104,55 @@ export const PROPELLER_FRAMES: Sprite[] = [
   { offsetX: PROPELLER_X, offsetY: PROPELLER_Y, rows: ['..bbKKRR..', '....KK....'] },
 ];
 
+// --- Mod 3: Kuş kanatları. İki kare: yukarıda / dokununca aşağı çırpılmış.
+export const WING_FRAMES: Sprite[] = [
+  {
+    offsetX: 0,
+    offsetY: -7,
+    rows: [
+      'VV.........',
+      'VVVV.......',
+      'vVVVVV.....',
+      'vVVVVVVV...',
+      '.vVVVVVVVV.',
+      '..vvVVVVVVV',
+      '....vvVVVVV',
+      '......vvvVV',
+      '.........vV',
+    ],
+  },
+  {
+    offsetX: -1,
+    offsetY: 3,
+    rows: [
+      '.........vV',
+      '......vvvVV',
+      '....vvVVVVV',
+      '..vVVVVVVV.',
+      'vVVVVVVV...',
+      'VVVVVV.....',
+      'VVV........',
+    ],
+  },
+];
+
+// --- Mod 4: Jetpack (sırtta) + alev
+export const JETPACK: Sprite = {
+  offsetX: 0,
+  offsetY: 4,
+  rows: [
+    '..KKKKK',
+    '.KgGGgK',
+    '.KgGRgK',
+    '.KgGRgK',
+    '.KgGGgK',
+    '.KgGGgK',
+    '..KggK.',
+    '..KKKK.',
+    '...KK..',
+  ],
+};
+
 // Alev: jetpack ağzının altında. Küçük (süzülürken) ve büyük (dokununca), ikişer titreme karesi.
 const FLAME_X = 2;
 const FLAME_Y = 13;
@@ -47,6 +164,3 @@ export const FLAME_BIG: Sprite[] = [
   { offsetX: FLAME_X, offsetY: FLAME_Y, rows: ['OYYO', '.YYO', '.OO.', '..O.'] },
   { offsetX: FLAME_X, offsetY: FLAME_Y, rows: ['OYYO', 'OYY.', '.OO.', '.O..'] },
 ];
-
-// Dönme ve konumlama merkezi: gövdenin ortası (piksel cinsinden).
-export const PIVOT = { x: 14, y: 9 };

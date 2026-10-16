@@ -12,6 +12,9 @@ Ton: sinir bozucu ama sakinleştirici; kapibaranın sakinliği merkezde.
   Çizimler `src/art/` altında metin ızgarası (her harf bir renk, PALETTE). `PixelSprite` ızgarayı
   renk başına tek Skia Path'e çevirir, antiAlias kapalı. Alev ve pervane ayrı kare dizileri (frame).
 - Yükselirken burun hafif yukarı, düşerken aşağı döner.
+- Modlar (oyun içinde skorla evrim): Yaprak kanat → Balon (25) → Pervaneli şapka (75) →
+  Kuş kanatları (150) → Jetpack + şapka (300). Her modun uçuş hissi farklı; arka plan da
+  sabahtan geceye değişir. Her yeni oyun yaprak kanatla başlar.
 
 ## İlk sürüm mekanikleri
 - Fizik: her karede `velocity += gravity * dt`, `y += velocity * dt`; dokununca velocity sabit yukarı değere ayarlanır. Hareket her zaman delta time ile çarpılır.
@@ -115,4 +118,9 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
   Ağırlık/zıplama `PASSENGER_STATS` (constants), puan = 10 x çarpan (1 + 0.2 x yolcu).
   Kuş: jump x1.06. Kaplumbağa: bambu çarpmasında en üstteki kaplumbağa iner, 1.2 sn dokunulmazlık
   (yanıp sönme). Maymun: portakal toplama kutusu +60 dp (görsel çekim efekti henüz yok).
+- Adım 8b tamam (modlar + seviyeler): oyun içinde evrim, her oyun yaprakla başlar.
+  `LEVELS` (constants): Yaprak 0 / Balon 25 / Pervaneli şapka 75 / Kuş kanatları 150 / Jetpack 300;
+  her modun gravity/jump/maxFall'u ve bambu hız çarpanı var. Gövde artık çıplak (`BODY`),
+  modlar `Gear` ile giydirilir (Capybara.tsx). Gökyüzü `art/skies.ts`: sabah/öğle/akşam/alacakaranlık/gece;
+  `levelBlend` ile 1.5 sn'de yumuşak geçiş. Seviye atlayınca Hud'da "Yeni mod" yazısı.
 - Sıradaki adım: 9 (his: ses, haptics, sarsıntı, parallax + tepkisiz yüz/gülümseme, suya düşme).

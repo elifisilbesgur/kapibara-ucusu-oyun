@@ -14,10 +14,11 @@ type Props = {
   score: number;
   runOranges: number; // Bu oyunda toplanan portakal
   multiplier: number; // Yolculardan gelen puan çarpanı (1 = yolcusuz)
+  banner: string | null; // Yeni moda geçince kısa süre görünen mod adı
 };
 
 // Oyunun üstündeki yazılar. pointerEvents="none": dokunuşlar alttaki oyuna geçsin.
-export function Hud({ phase, score, runOranges, multiplier }: Props) {
+export function Hud({ phase, score, runOranges, multiplier, banner }: Props) {
   const insets = useSafeAreaInsets();
   const totalOranges = useGameStore((state) => state.totalOranges);
 
@@ -30,6 +31,13 @@ export function Hud({ phase, score, runOranges, multiplier }: Props) {
 
       <Text style={[styles.score, { marginTop: insets.top + 24 }]}>{score}</Text>
       {multiplier > 1 && <Text style={styles.multiplier}>×{multiplier.toFixed(1)}</Text>}
+
+      {banner && phase === 'playing' && (
+        <View style={styles.banner}>
+          <Text style={styles.bannerLabel}>Yeni mod</Text>
+          <Text style={styles.bannerName}>{banner}</Text>
+        </View>
+      )}
 
       {phase === 'ready' && <Text style={styles.message}>Uçmak için dokun</Text>}
 
@@ -98,6 +106,26 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.35)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 3,
+  },
+  banner: {
+    marginTop: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: 'rgba(59, 36, 20, 0.75)',
+    alignItems: 'center',
+  },
+  bannerLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFD23F',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  bannerName: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: 'white',
   },
   panel: {
     marginTop: '40%',
