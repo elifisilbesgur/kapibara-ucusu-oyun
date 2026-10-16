@@ -3,8 +3,10 @@ import { StyleSheet, useWindowDimensions } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useFrameCallback, useSharedValue } from 'react-native-reanimated';
 
+import { Obstacle } from '@/components/Obstacle';
 import { COLORS, JUMP_VELOCITY, PLAYER_RADIUS, PLAYER_X_RATIO } from '@/game/constants';
 import { frameDeltaSeconds, stepPosition, stepVelocity } from '@/game/physics';
+import { createObstacles, obstacleCount, stepObstacles } from '@/game/spawner';
 
 export default function GameScreen() {
   const { width, height } = useWindowDimensions();
@@ -12,12 +14,14 @@ export default function GameScreen() {
   const playerX = width * PLAYER_X_RATIO;
   const playerY = useSharedValue(height / 2);
   const velocity = useSharedValue(0);
+  const obstacles = useSharedValue(createObstacles(width, height));
 
   useFrameCallback((frame) => {
     const dt = frameDeltaSeconds(frame.timeSincePreviousFrame);
 
     velocity.set(stepVelocity(velocity.get(), dt));
     playerY.set(stepPosition(playerY.get(), velocity.get(), dt));
+    obstacles.set(stepObstacles(obstacles.get(), dt, height));
 
     // Geçici: tavanda dur (Adım 5'te tavana değmek oyunu bitirecek)
     if (playerY.get() - PLAYER_RADIUS < 0) {
@@ -41,6 +45,9 @@ export default function GameScreen() {
     <GestureDetector gesture={tap}>
       <Canvas style={styles.canvas}>
         <Fill color={COLORS.sky} />
+        {Array.from({ length: obstacleCount(width) }, (_, i) => (
+          <Obstacle key={i} obstacles={obstacles} index={i} screenHeight={height} />
+        ))}
         <Circle cx={playerX} cy={playerY} r={PLAYER_RADIUS} color={COLORS.player} />
       </Canvas>
     </GestureDetector>

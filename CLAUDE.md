@@ -74,4 +74,6 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
   ekran altından çıkınca geçici olarak ortaya dönüyor (Adım 5'te oyun sonu olacak).
 - Adım 3 tamam: `GestureHandlerRootView` layout'ta; `Gesture.Tap().onBegin` ile velocity = JUMP_VELOCITY.
   Tavanda geçici olarak duruyor.
-- Sıradaki adım: 4 (sağdan gelen bambu engeli).
+- Adım 4 tamam: `src/game/spawner.ts` (engel havuzu, sola kaydırma, soldan çıkanı en arkaya taşıma)
+  + `src/components/Obstacle.tsx` (useDerivedValue ile iki Rect). Görünüm şimdilik düz yeşil dikdörtgen.
+- Sıradaki adım: 5 (çarpışma, skor, oyun sonu, tekrar başlat).
