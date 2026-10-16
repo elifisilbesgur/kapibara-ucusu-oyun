@@ -203,4 +203,7 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
   hazır ekranında beklerken birikir; portakal ya da ilk dokunuş ayıltır. Yüz: ≥0.5 yarı kapalı göz
   (EYES_HALF), ≥0.6 her 4 sn'de esneme (YAWN), ≥0.85 kapalı göz + yükselen "z" (SNORE_Z);
   suda sırtüstü yüzerken de "z". PlayerProps'a `drowsiness` eklendi (Burak kullanmaz).
+- Ses düzeltmesi: her zıplamada ses çıkmıyordu. Sebep: tek çalar + `seekTo` asenkron (Promise) ama
+  beklenmeden `play()` çağrılıyordu. Şimdi her ses için çalar HAVUZU (zıplama 4, toplama 3...) sırayla
+  kullanılır ve `await player.seekTo(0)` sonrası `play()`.
 - Sıradaki adım: 10, 13–16'dan biri.
