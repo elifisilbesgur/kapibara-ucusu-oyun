@@ -111,3 +111,41 @@ export const SPLASH: Sprite = {
     '.hwwwwwwh.',
   ],
 };
+
+// Yolcu durağı: suya oturan küçük iskele + bayrak. Bacakları suyun içinde kalır.
+const DOCK_ROWS = [
+  '......d.......',
+  '......d.......',
+  '......d.......',
+  '......d.......',
+  '......d.......',
+  '......d.......',
+  '......d.......',
+  '......d.......',
+  '......d.......',
+  '......d.......',
+  '......d.......',
+  '......d.......',
+  '......d.......',
+  '......d.......',
+  '......d.......',
+  'drrrrrrrrrrrrd',
+  'dddddddddddddd',
+  '.d....d....d..',
+  '.d....d....d..',
+  '.d....d....d..',
+];
+// Bayrak direğin tepesinde: yolcular inince iner (kullanılmış durak)
+const FLAG = ['.......RRRRR..', '.......RYYYRR.', '.......RRRRR..'];
+
+export const DOCK: Sprite = {
+  offsetX: 0,
+  offsetY: 0,
+  rows: DOCK_ROWS.map((row, i) => (i < FLAG.length ? mergeRow(row, FLAG[i]) : row)),
+};
+export const DOCK_USED: Sprite = { offsetX: 0, offsetY: 0, rows: DOCK_ROWS };
+
+// İki satırı üst üste koyar: üstteki satırın boş olmayan pikselleri kazanır
+function mergeRow(bottom: string, top: string): string {
+  return [...bottom].map((char, i) => (top[i] && top[i] !== '.' ? top[i] : char)).join('');
+}

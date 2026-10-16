@@ -10,8 +10,9 @@ export type ModeId = 'capybara' | 'burak';
 
 // --- Kurallar: sadece sayı ve liste. Oyun döngüsü (UI thread) bunları okur.
 
-// currency: kumbaraya giden para (portakal), passenger: sırta biner, part: puan + kasa
-export type ItemRole = 'currency' | 'passenger' | 'part';
+// currency: kumbaraya giden para (portakal), passenger: sırta biner, part: puan + kasa,
+// stop: yolcu durağı (değince yolcular iner, sırttaki bonus kasaya girer)
+export type ItemRole = 'currency' | 'passenger' | 'part' | 'stop';
 
 export type ItemRule = {
   id: string;

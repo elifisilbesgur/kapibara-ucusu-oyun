@@ -84,6 +84,8 @@ export default function GameScreen({ mode }: Props) {
   const [banner, setBanner] = useState<Banner | null>(null); // "Yeni mod: Balon" gibi
   const [kitMask, setKitMask] = useState(0); // Kasada hangi parçalar var (bit maskesi)
   const [newRecord, setNewRecord] = useState(false);
+  const [pending, setPending] = useState(0); // Sırttaki (henüz kasaya girmemiş) yolcu bonusu
+  const [lostPending, setLostPending] = useState(0); // Çarpınca kaybolan sırttaki bonus
   const addOranges = useGameStore((state) => state.addOranges);
   const submitScore = useGameStore((state) => state.submitScore);
   const best = useGameStore((state) => state.bestScores[mode.id]);
@@ -103,6 +105,9 @@ export default function GameScreen({ mode }: Props) {
   const phaseSV = useSharedValue<GamePhase>('ready');
   const scoreSV = useSharedValue(0);
   const runOrangesSV = useSharedValue(0);
+  const pendingSV = useSharedValue(0);
+  // Modda durak varsa yolcu bonusu önce sırtta birikir; yoksa doğrudan skora gider
+  const hasStops = rules.items.some((item) => item.role === 'stop');
   const msSinceGameOver = useSharedValue(0);
   const paused = useSharedValue(false); // Menü açıkken her şey durur
   const level = useSharedValue(0); // 0-4: hangi mod
@@ -141,6 +146,7 @@ export default function GameScreen({ mode }: Props) {
       scheduleOnRN(hapticSplash);
       scheduleOnRN(soundSplash);
       scheduleOnRN(handleGameOver, scoreSV.get());
+      if (pendingSV.get() > 0) scheduleOnRN(setLostPending, pendingSV.get()); // Sırttaki bonus gitti
       scheduleOnRN(setPhase, 'over');
     };
 
@@ -192,8 +198,16 @@ export default function GameScreen({ mode }: Props) {
     obstacles.set(scored.obstacles);
     let gained = 0;
     if (scored.newlyPassed > 0) {
-      const multiplier = multiplierFor(passengers.get().length);
-      gained += Math.round(scored.newlyPassed * rules.pointsPerGate * multiplier);
+      // Taban puan hep güvende; yolcu çarpanından gelen fazlalık (bonus) sırtta birikir
+      const base = scored.newlyPassed * rules.pointsPerGate;
+      const bonus = Math.round(base * (multiplierFor(passengers.get().length) - 1));
+      gained += base;
+      if (bonus > 0 && hasStops) {
+        pendingSV.set(pendingSV.get() + bonus);
+        scheduleOnRN(setPending, pendingSV.get());
+      } else {
+        gained += bonus;
+      }
     }
 
     const box = playerBox(playerX, playerY.get(), rules.hitbox);
@@ -214,6 +228,22 @@ export default function GameScreen({ mode }: Props) {
       scheduleOnRN(setPassengerCount, passengers.get().length);
       scheduleOnRN(hapticPassenger);
       scheduleOnRN(soundPassenger);
+    }
+    if (picked.stopped) {
+      // Durak: yolcular iner, sırttaki bonus kasaya (skora) girer; çarpan ve ağırlık sıfırlanır
+      const banked = pendingSV.get();
+      gained += banked;
+      pendingSV.set(0);
+      passengers.set([]);
+      bannerTime.set(LEVEL_BANNER_TIME);
+      scheduleOnRN(setBanner, {
+        label: 'Durak',
+        title: banked > 0 ? `+${banked} kasaya` : 'Yolcular indi',
+      });
+      scheduleOnRN(setPending, 0);
+      scheduleOnRN(setPassengerCount, 0);
+      scheduleOnRN(hapticLevelUp);
+      scheduleOnRN(soundKit);
     }
     if (picked.parts.length > 0) {
       gained += picked.partPoints;
@@ -303,6 +333,7 @@ export default function GameScreen({ mode }: Props) {
       celebrationTime.set(0);
       scoreSV.set(0);
       runOrangesSV.set(0);
+      pendingSV.set(0);
       phaseSV.set('ready');
       scheduleOnRN(setScore, 0);
       scheduleOnRN(setRunOranges, 0);
@@ -310,6 +341,8 @@ export default function GameScreen({ mode }: Props) {
       scheduleOnRN(setBanner, null);
       scheduleOnRN(setKitMask, 0);
       scheduleOnRN(setNewRecord, false);
+      scheduleOnRN(setPending, 0);
+      scheduleOnRN(setLostPending, 0);
       scheduleOnRN(setPhase, 'ready');
       return;
     }
@@ -384,6 +417,8 @@ export default function GameScreen({ mode }: Props) {
             score={score}
             runOranges={runOranges}
             multiplier={multiplierFor(passengerCount)}
+            pending={pending}
+            lostPending={lostPending}
             banner={banner}
             showWallet={rules.items.some((item) => item.role === 'currency')}
             kit={rules.kit && { parts: rules.kit.parts, mask: kitMask }}

@@ -2,7 +2,8 @@ import { Group } from '@shopify/react-native-skia';
 import { useDerivedValue, type SharedValue } from 'react-native-reanimated';
 
 import { PASSENGER_SPRITES } from '@/art/passengers';
-import { ORANGE } from '@/art/world';
+import type { Sprite } from '@/art/palette';
+import { DOCK, DOCK_USED, ORANGE } from '@/art/world';
 import { PixelSprite } from '@/components/PixelSprite';
 import { ITEM_BOB, ITEM_BOB_SPEED, ITEM_SIZE, PIXEL_SIZE } from '@/game/constants';
 import { itemCenterX } from '@/game/items';
@@ -10,8 +11,22 @@ import { PASSENGER_KINDS } from '@/game/passengers';
 import type { Obstacle } from '@/game/spawner';
 import type { ItemViewProps } from '@/modes/types';
 
-// Kapibara modunun eşyası: portakal ya da bekleyen yolcu. Hepsi çizilir, sadece doğru olan görünür.
+const DOCK_WIDTH = DOCK.rows[0].length * PIXEL_SIZE;
+const DOCK_HEIGHT = DOCK.rows.length * PIXEL_SIZE;
+
+// Kapibara modunun eşyası: portakal, bekleyen yolcu ya da durak (iskele).
+// Hepsi çizilir, sadece doğru olan görünür.
 export function Item({ obstacles, index, clock }: ItemViewProps) {
+  // İskele süzülmez: suya oturur
+  const dockTransform = useDerivedValue(() => {
+    const obstacle = obstacles.get()[index];
+    return [
+      { translateX: Math.round(itemCenterX(obstacle) - DOCK_WIDTH / 2) },
+      { translateY: Math.round(obstacle.itemY - DOCK_HEIGHT / 2) },
+      { scale: PIXEL_SIZE },
+    ];
+  });
+
   const transform = useDerivedValue(() => {
     const obstacle = obstacles.get()[index];
     // Süzülme: sinüs dalgası, piksel ızgarasına yuvarlanmış (kesik kesik, retro his).
@@ -26,28 +41,42 @@ export function Item({ obstacles, index, clock }: ItemViewProps) {
   });
 
   return (
-    <Group transform={transform}>
-      <ItemSprite kind="orange" obstacles={obstacles} index={index} />
-      {/* Yolcular 6 piksel boyunda, portakal 8: bir piksel aşağı alıp ortalıyoruz */}
-      <Group transform={[{ translateY: 1 }]}>
-        {PASSENGER_KINDS.map((kind) => (
-          <ItemSprite key={kind} kind={kind} obstacles={obstacles} index={index} />
-        ))}
+    <>
+      <Group transform={dockTransform}>
+        <ItemSprite kind="stop" sprite={DOCK} obstacles={obstacles} index={index} />
+        <ItemSprite kind="stop_used" sprite={DOCK_USED} obstacles={obstacles} index={index} />
       </Group>
-    </Group>
+      <Group transform={transform}>
+        <ItemSprite kind="orange" sprite={ORANGE} obstacles={obstacles} index={index} />
+        {/* Yolcular 6 piksel boyunda, portakal 8: bir piksel aşağı alıp ortalıyoruz */}
+        <Group transform={[{ translateY: 1 }]}>
+          {PASSENGER_KINDS.map((kind) => (
+            <ItemSprite
+              key={kind}
+              kind={kind}
+              sprite={PASSENGER_SPRITES[kind]}
+              obstacles={obstacles}
+              index={index}
+            />
+          ))}
+        </Group>
+      </Group>
+    </>
   );
 }
 
+// Engelin eşyası `kind` ise görünür
 function ItemSprite({
   kind,
+  sprite,
   obstacles,
   index,
 }: {
-  kind: 'orange' | (typeof PASSENGER_KINDS)[number];
+  kind: string;
+  sprite: Sprite;
   obstacles: SharedValue<Obstacle[]>;
   index: number;
 }) {
   const opacity = useDerivedValue<number>(() => (obstacles.get()[index].item === kind ? 1 : 0));
-  const sprite = kind === 'orange' ? ORANGE : PASSENGER_SPRITES[kind];
   return <PixelSprite sprite={sprite} opacity={opacity} />;
 }

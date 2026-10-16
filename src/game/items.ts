@@ -42,7 +42,8 @@ function findItem(rules: ModeRules, id: string): ItemRule | undefined {
 }
 
 // Oyuncunun değdiği eşyaları toplar ve rollerine göre ayırır:
-// currency → kumbaraya, passenger → sırta (sırt doluysa alınmaz), part → puan.
+// currency → kumbaraya, passenger → sırta (sırt doluysa alınmaz), part → puan,
+// stop → yolcular iner (sırtta yolcu yoksa durak kullanılmaz, sonrakine saklanır).
 // Maymun sırttaysa para (portakal) uzaktan da toplanır.
 export function collectItems(
   obstacles: Obstacle[],
@@ -55,12 +56,14 @@ export function collectItems(
   newPassengers: PassengerKind[];
   parts: string[];
   partPoints: number;
+  stopped: boolean;
 } {
   'worklet';
   const magnet = passengers.includes('monkey') ? MAGNET_RANGE : 0;
   let room = MAX_PASSENGERS - passengers.length;
   let currency = 0;
   let partPoints = 0;
+  let stopped = false;
   const newPassengers: PassengerKind[] = [];
   const parts: string[] = [];
 
@@ -71,6 +74,10 @@ export function collectItems(
     if (item.role === 'currency') {
       if (!intersects(player, itemBox(obstacle, item, magnet))) return obstacle;
       currency++;
+    } else if (item.role === 'stop') {
+      if (passengers.length === 0 || !intersects(player, itemBox(obstacle, item))) return obstacle;
+      stopped = true;
+      return { ...obstacle, item: `${item.id}_used` }; // Bayrak iner; bir daha kullanılmaz
     } else if (item.role === 'passenger') {
       if (room === 0 || !intersects(player, itemBox(obstacle, item))) return obstacle;
       room--;
@@ -83,5 +90,5 @@ export function collectItems(
     return { ...obstacle, item: 'none' };
   });
 
-  return { obstacles: updated, currency, newPassengers, parts, partPoints };
+  return { obstacles: updated, currency, newPassengers, parts, partPoints, stopped };
 }

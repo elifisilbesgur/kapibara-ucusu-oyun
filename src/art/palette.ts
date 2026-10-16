@@ -39,6 +39,9 @@ export const PALETTE: Record<string, string> = {
   w: '#5EC3E6', // su yüzeyi
   i: '#3FA4D4', // su
   I: '#2A7DB3', // derin su
+  // Yolcu durağı (iskele)
+  r: '#A06A3A', // tahta
+  d: '#5E3B1C', // koyu tahta / direk
   // Burak modunun arka planı: bilgisayarlar (gökyüzüne yakın soluk tonlar, oyunun önüne geçmesin)
   k: '#7DAAC3', // çerçeve
   C: '#B3D9E9', // kasa

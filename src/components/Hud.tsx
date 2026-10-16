@@ -21,6 +21,8 @@ type Props = {
   banner: Banner | null; // Kısa süre görünen duyuru (yeni mod, kasa tamam)
   showWallet: boolean; // Portakal kumbarası (sadece parası olan modlarda)
   kit?: { parts: string[]; mask: number }; // Kasa göstergesi (sadece kasası olan modlarda)
+  pending: number; // Sırttaki, henüz kasaya girmemiş yolcu bonusu
+  lostPending: number; // Çarpınca kaybolan sırttaki bonus
   best: number; // Bu modun rekoru
   newRecord: boolean; // Biten oyun rekor kırdı mı
 };
@@ -34,6 +36,8 @@ export function Hud({
   banner,
   showWallet,
   kit,
+  pending,
+  lostPending,
   best,
   newRecord,
 }: Props) {
@@ -51,7 +55,13 @@ export function Hud({
 
       <Text style={[styles.score, { marginTop: insets.top + 24 }]}>{score}</Text>
       {kit && <KitBar parts={kit.parts} mask={kit.mask} />}
-      {multiplier > 1 && <Text style={styles.multiplier}>×{multiplier.toFixed(1)}</Text>}
+      {(multiplier > 1 || pending > 0) && (
+        <Text style={styles.multiplier}>
+          {multiplier > 1 && `×${multiplier.toFixed(1)}`}
+          {multiplier > 1 && pending > 0 && '  ·  '}
+          {pending > 0 && <Text style={styles.pending}>sırtta +{pending}</Text>}
+        </Text>
+      )}
 
       {banner && phase === 'playing' && (
         <View style={styles.banner}>
@@ -65,6 +75,7 @@ export function Hud({
       {phase === 'over' && (
         <View style={styles.panel}>
           <Text style={styles.title}>Oyun bitti</Text>
+          {lostPending > 0 && <Text style={styles.lost}>Sırttaki +{lostPending} kayboldu</Text>}
           {newRecord ? (
             <Text style={styles.record}>Yeni rekor!</Text>
           ) : (
@@ -209,6 +220,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+  },
+  pending: {
+    fontSize: 16,
+    color: 'white',
+  },
+  lost: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#7A5A44',
   },
   record: {
     fontSize: 22,

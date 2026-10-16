@@ -193,4 +193,9 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
   `createAudioPlayer`, `playsInSilentMode: false`, `mixWithOthers`; çalmadan önce `seekTo(0)`.
   Store'da kalıcı `soundOn`, ☰ menüde Ses Açık/Kapalı. Parallax: `Background` `scroll` (worldScroll)
   alır; bulutlar/süzülenler depth 0.12–0.24 ile kayar ve sarar, kıyı silüeti 0.35 ile iki kopya halinde.
-- Sıradaki adım: 10 (cila: ayarlar vb.) ya da 11–16'dan biri.
+- Adım 12 tamam (yolcu durakları): rol `stop` (kapibara: chance 0.1, kutu 42x60). İskele `DOCK`/`DOCK_USED`
+  (art/world.ts), suyun üstünde `DOCK_LIFT` = 21, süzülmez. Puan ikiye ayrıldı: engel taban puanı hep
+  güvende, yolcu çarpanından gelen bonus `pendingSV`'de birikir ("sırtta +N"). Durağa yolcuyla değince:
+  bonus skora, yolcular iner (çarpan/ağırlık sıfır), bayrak iner (`stop_used`). Çarpınca sırttaki
+  bonus kaybolur (Hud: "Sırttaki +N kayboldu"). Durağı olmayan modda bonus doğrudan skora gider.
+- Sıradaki adım: 10, 11, 13–16'dan biri.

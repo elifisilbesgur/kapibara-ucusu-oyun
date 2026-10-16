@@ -20,6 +20,8 @@ export const CAPYBARA_MODE: GameMode = {
       { id: 'bird', role: 'passenger', chance: 0.05, points: 0 },
       { id: 'turtle', role: 'passenger', chance: 0.05, points: 0 },
       { id: 'monkey', role: 'passenger', chance: 0.05, points: 0 },
+      // İskele: 14x20 piksel (3x) → 42x60 dp; ona değmek için suya yaklaşmak gerekir
+      { id: 'stop', role: 'stop', chance: 0.1, points: 0, box: { width: 42, height: 60 } },
     ],
     itemInGapChance: 0,
     // Skor eşiği geçilince kapibara yeni moda evrimleşir.

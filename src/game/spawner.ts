@@ -1,6 +1,7 @@
-import type { ModeRules } from '@/modes/types';
+import type { ItemRule, ModeRules } from '@/modes/types';
 
 import {
+  DOCK_LIFT,
   GAP_MARGIN,
   ITEM_SIZE,
   ITEM_Y_SPREAD,
@@ -44,22 +45,37 @@ export function randomGapY(screenHeight: number, gapSize: number): number {
   return min + Math.random() * (max - min);
 }
 
-// Bir zar at: modun eşya listesindeki olasılıklara göre bir eşya ya da 'none'.
+// Bir zar at: modun eşya listesindeki olasılıklara göre bir eşya ya da hiçbiri (undefined).
 // Sayı doğrusu dilimlere bölünür: [portakal 0.5][kuş 0.05][kaplumbağa 0.05]...[boş]
-function randomItem(rules: ModeRules): string {
+function randomItem(rules: ModeRules): ItemRule | undefined {
   'worklet';
   let roll = Math.random();
   for (const item of rules.items) {
-    if (roll < item.chance) return item.id;
+    if (roll < item.chance) return item;
     roll -= item.chance;
   }
-  return 'none';
+  return undefined;
 }
 
 // Yeni bir engel: rastgele geçit, belki bir eşya (geçidin hizasına yakın ya da içinde).
 function newObstacle(x: number, screenHeight: number, gapSize: number, rules: ModeRules): Obstacle {
   'worklet';
   const gapY = randomGapY(screenHeight, gapSize);
+  const item = randomItem(rules);
+
+  // Durak (iskele) hep suyun üstünde, engellerin arasında durur
+  if (item?.role === 'stop') {
+    return {
+      x,
+      gapY,
+      gapSize,
+      passed: false,
+      item: item.id,
+      itemY: screenHeight - DOCK_LIFT,
+      itemInGap: false,
+    };
+  }
+
   const itemInGap = Math.random() < rules.itemInGapChance;
   // Geçidin içindeyse kenarlara değmesin diye yayılım geçitle sınırlı
   const spread = itemInGap ? Math.max(0, gapSize / 2 - ITEM_SIZE) : ITEM_Y_SPREAD;
@@ -69,7 +85,7 @@ function newObstacle(x: number, screenHeight: number, gapSize: number, rules: Mo
     gapY,
     gapSize,
     passed: false,
-    item: randomItem(rules),
+    item: item?.id ?? 'none',
     itemY: Math.min(screenHeight - GAP_MARGIN, Math.max(GAP_MARGIN, itemY)),
     itemInGap,
   };

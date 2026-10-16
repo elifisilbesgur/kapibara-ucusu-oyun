@@ -48,6 +48,9 @@ export const FLOAT_BOB = 3; // Suda bu kadar aşağı-yukarı sallanır (dp)
 export const FLOAT_BOB_SPEED = 2; // Sallanma hızı (radyan/sn)
 export const SPLASH_TIME = 0.5; // Su sıçraması bu kadar saniye görünür
 
+// Yolcu durağı (iskele): ortası su yüzeyinin bu kadar üstünde; bacaklar suyun içinde kalır
+export const DOCK_LIFT = 21;
+
 // Kasa kutlaması (Burak Uçuyor)
 export const CELEBRATION_TIME = 1.2; // Konfeti bu kadar saniye uçuşur
 
