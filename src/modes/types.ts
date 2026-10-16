@@ -49,6 +49,9 @@ export type ModeRules = {
   // fullAfter: kaç saniyede tamamen uykulu; tam uykuluyken zıplama jumpLoss kadar zayıf,
   // yerçekimi gravityGain kadar güçlü (ör. 0.12 → %12)
   drowsiness?: { fullAfter: number; jumpLoss: number; gravityGain: number };
+  // Rüzgâr (isteğe bağlı): skor minScore'u geçince engellerin `chance` kadarı rüzgârlı olur;
+  // rüzgâr bölgesinde oyuncu accel (dp/s²) ile yukarı ya da aşağı itilir
+  wind?: { chance: number; accel: number; minScore: number };
 };
 
 // --- Görünüm: React bileşenleri. Sadece çizim tarafı kullanır.
@@ -72,6 +75,7 @@ export type ObstacleViewProps = {
   obstacles: SharedValue<Obstacle[]>;
   index: number;
   screenHeight: number;
+  clock: SharedValue<number>; // Yaprak titremesi gibi animasyonlar için
 };
 
 export type ItemViewProps = {

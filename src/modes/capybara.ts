@@ -38,6 +38,8 @@ export const CAPYBARA_MODE: GameMode = {
     floatLift: 18, // Sırtüstü yüzerken
     // Portakal yemeden 14 sn uçunca tamamen uykulu: zıplama %12 zayıf, yerçekimi %10 güçlü
     drowsiness: { fullAfter: 14, jumpLoss: 0.12, gravityGain: 0.1 },
+    // 20 puandan sonra bambuların %25'i rüzgârlı; rüzgâr yerçekiminin ~üçte biri kadar iter
+    wind: { chance: 0.25, accel: 380, minScore: 20 },
   },
   view: {
     Player: Capybara,

@@ -149,3 +149,49 @@ export const DOCK_USED: Sprite = { offsetX: 0, offsetY: 0, rows: DOCK_ROWS };
 function mergeRow(bottom: string, top: string): string {
   return [...bottom].map((char, i) => (top[i] && top[i] !== '.' ? top[i] : char)).join('');
 }
+
+// Bir çizimi dikeyde aynalar (yukarı bakan yaprak → aşağı bakan yaprak)
+export function flipVertical(sprite: Sprite): Sprite {
+  return { ...sprite, rows: [...sprite.rows].reverse() };
+}
+
+// Bambu yaprağı: sol kenarından kamışa tutturulur, sağa doğru uzanır.
+// Sakin hava: hafifçe sarkık. Rüzgârda: rüzgârın yönüne kalkar/iner ve iki kare arasında titrer.
+const LEAF_DROOP: Sprite = at0([
+  'DDDD......',
+  'DMMMDDD...',
+  '.DDHMMMDD.',
+  '...DDDMMMD',
+  '......DDDD',
+]);
+const LEAF_DOWN_A: Sprite = at0([
+  'DD......',
+  'DMDD....',
+  '.DHMD...',
+  '..DMMD..',
+  '...DMMD.',
+  '....DMMD',
+  '.....DDD',
+]);
+const LEAF_DOWN_B: Sprite = at0([
+  'DDD.......',
+  'DMMDD.....',
+  '.DHMMDD...',
+  '..DDMMMD..',
+  '....DDMMD.',
+  '......DDDD',
+]);
+
+// Sıra önemli: Obstacle.tsx bu sıraya göre kare seçer
+export const LEAF_FRAMES: Sprite[] = [
+  LEAF_DROOP, // 0: sakin, ekranda aşağı sarkar
+  flipVertical(LEAF_DROOP), // 1: sakin, ama ters çevrilmiş (üst kamış için)
+  flipVertical(LEAF_DOWN_A), // 2: yukarı rüzgâr, titreme A
+  flipVertical(LEAF_DOWN_B), // 3: yukarı rüzgâr, titreme B
+  LEAF_DOWN_A, // 4: aşağı rüzgâr, titreme A
+  LEAF_DOWN_B, // 5: aşağı rüzgâr, titreme B
+];
+
+function at0(rows: string[]): Sprite {
+  return { offsetX: 0, offsetY: 0, rows };
+}

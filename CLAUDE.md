@@ -206,4 +206,10 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
 - Ses düzeltmesi: her zıplamada ses çıkmıyordu. Sebep: tek çalar + `seekTo` asenkron (Promise) ama
   beklenmeden `play()` çağrılıyordu. Şimdi her ses için çalar HAVUZU (zıplama 4, toplama 3...) sırayla
   kullanılır ve `await player.seekTo(0)` sonrası `play()`.
-- Sıradaki adım: 10, 13–16'dan biri.
+- Adım 13 tamam (rüzgâr): `rules.wind` (kapibara: 20 puandan sonra engellerin %25'i, accel 380).
+  Engel `wind` (-1 yukarı / 0 / +1 aşağı) doğarken belirlenir (`stepObstacles` windChance alır).
+  `game/wind.ts`: `windAt(obstacles, x)` → engel ortasından ±yarım aralık bölge, WIND_FADE ile yumuşak
+  giriş; `leafFrame(wind, flipped, time)`. Bambu boğumlarında iki yaprak (LEAF_FRAMES: sakin sarkık,
+  rüzgârda yöne kalkar + titrer; üst kamış ters çizildiği için yön çevrilir). Geçitte beyaz hava
+  çizgileri rüzgâr yönünde kayar. ObstacleViewProps'a `clock` eklendi. Burak modunda rüzgâr yok.
+- Sıradaki adım: 10, 14–16'dan biri.

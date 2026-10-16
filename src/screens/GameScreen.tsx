@@ -69,6 +69,7 @@ import {
   stepObstacles,
 } from '@/game/spawner';
 import type { GameMode } from '@/modes/types';
+import { windAt } from '@/game/wind';
 import { useGameStore } from '@/store/useGameStore';
 
 type Props = {
@@ -199,9 +200,19 @@ export default function GameScreen({ mode }: Props) {
     const sleepy = 1 + (rules.drowsiness?.gravityGain ?? 0) * drowsiness.get();
     const gravity = stage.gravity * gravityScale(passengers.get()) * sleepy;
     velocity.set(stepVelocity(velocity.get(), dt, gravity, stage.maxFall));
+    // Rüzgâr: oyuncu rüzgârlı bir engelin bölgesindeyse yukarı ya da aşağı itilir
+    if (rules.wind) {
+      const wind = windAt(obstacles.get(), playerX);
+      if (wind !== 0) velocity.set(velocity.get() + wind * rules.wind.accel * dt);
+    }
     playerY.set(stepPosition(playerY.get(), velocity.get(), dt));
     const gapSize = gapSizeFor(scoreSV.get(), rules); // Yeni gelen engeller bu boyla kurulur
-    obstacles.set(stepObstacles(obstacles.get(), dt, waterY, rules, stage.speed, gapSize));
+    // Rüzgâr skor eşiğini geçince başlar (oyunun başı sakin)
+    const windChance =
+      rules.wind && scoreSV.get() >= rules.wind.minScore ? rules.wind.chance : 0;
+    obstacles.set(
+      stepObstacles(obstacles.get(), dt, waterY, rules, stage.speed, gapSize, windChance),
+    );
     worldScroll.set(worldScroll.get() + OBSTACLE_SPEED * stage.speed * dt);
     shieldTime.set(Math.max(0, shieldTime.get() - dt));
 
@@ -401,7 +412,13 @@ export default function GameScreen({ mode }: Props) {
                 scroll={worldScroll}
               />
               {Array.from({ length: slots }, (_, i) => (
-                <view.Obstacle key={i} obstacles={obstacles} index={i} screenHeight={height} />
+                <view.Obstacle
+                  key={i}
+                  obstacles={obstacles}
+                  index={i}
+                  screenHeight={height}
+                  clock={clock}
+                />
               ))}
               {Array.from({ length: slots }, (_, i) => (
                 <view.Item key={i} obstacles={obstacles} index={i} clock={clock} />

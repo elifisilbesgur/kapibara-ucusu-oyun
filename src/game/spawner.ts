@@ -13,7 +13,8 @@ import {
 // Bir engel = üst ve alt parça (bambu/kablo) + önündeki boşlukta belki bir eşya.
 // x: sol kenar, gapY/gapSize: geçidin ortası ve boyu (skorla daraldığı için her engelin kendi boyu),
 // passed: oyuncu geçti mi (puan bir kez sayılsın), item: eşyanın id'si ('none' = boş),
-// itemY: eşyanın yüksekliği, itemInGap: eşya engellerin arasında değil geçidin içinde mi.
+// itemY: eşyanın yüksekliği, itemInGap: eşya engellerin arasında değil geçidin içinde mi,
+// wind: bu engelin çevresindeki rüzgâr (-1 yukarı, 0 yok, +1 aşağı).
 export type Obstacle = {
   x: number;
   gapY: number;
@@ -22,6 +23,7 @@ export type Obstacle = {
   item: string;
   itemY: number;
   itemInGap: boolean;
+  wind: number;
 };
 
 // Ekranı dolduracak kadar engel + bir fazlası: böylece en arkaya taşınan engelin
@@ -57,11 +59,19 @@ function randomItem(rules: ModeRules): ItemRule | undefined {
   return undefined;
 }
 
-// Yeni bir engel: rastgele geçit, belki bir eşya (geçidin hizasına yakın ya da içinde).
-function newObstacle(x: number, screenHeight: number, gapSize: number, rules: ModeRules): Obstacle {
+// Yeni bir engel: rastgele geçit, belki bir eşya (geçidin hizasına yakın ya da içinde),
+// windChance olasılıkla rüzgâr (yönü yarı yarıya yukarı/aşağı).
+function newObstacle(
+  x: number,
+  screenHeight: number,
+  gapSize: number,
+  rules: ModeRules,
+  windChance: number,
+): Obstacle {
   'worklet';
   const gapY = randomGapY(screenHeight, gapSize);
   const item = randomItem(rules);
+  const wind = Math.random() < windChance ? (Math.random() < 0.5 ? -1 : 1) : 0;
 
   // Durak (iskele) hep suyun üstünde, engellerin arasında durur
   if (item?.role === 'stop') {
@@ -73,6 +83,7 @@ function newObstacle(x: number, screenHeight: number, gapSize: number, rules: Mo
       item: item.id,
       itemY: screenHeight - DOCK_LIFT,
       itemInGap: false,
+      wind,
     };
   }
 
@@ -88,6 +99,7 @@ function newObstacle(x: number, screenHeight: number, gapSize: number, rules: Mo
     item: item?.id ?? 'none',
     itemY: Math.min(screenHeight - GAP_MARGIN, Math.max(GAP_MARGIN, itemY)),
     itemInGap,
+    wind,
   };
 }
 
@@ -101,14 +113,17 @@ export function createObstacles(
   const firstX = screenWidth + OBSTACLE_SPACING / 2;
   const obstacles: Obstacle[] = [];
   for (let i = 0; i < obstacleCount(screenWidth); i++) {
-    obstacles.push(newObstacle(firstX + i * OBSTACLE_SPACING, screenHeight, rules.gap.start, rules));
+    // Başlangıçta rüzgâr yok (windChance 0): oyun sakin başlasın
+    obstacles.push(
+      newObstacle(firstX + i * OBSTACLE_SPACING, screenHeight, rules.gap.start, rules, 0),
+    );
   }
   return obstacles;
 }
 
 // Her karede engelleri sola kaydırır. Soldan tamamen çıkan engel, sıranın en arkasına
 // (sağa) taşınır ve o anki geçit boyuyla (gapSize) yeniden rastgele kurulur.
-// speedScale: seviyeyle artan hız çarpanı.
+// speedScale: seviyeyle artan hız çarpanı. windChance: yeni engelin rüzgârlı olma olasılığı.
 export function stepObstacles(
   obstacles: Obstacle[],
   dt: number,
@@ -116,13 +131,14 @@ export function stepObstacles(
   rules: ModeRules,
   speedScale: number,
   gapSize: number,
+  windChance: number,
 ): Obstacle[] {
   'worklet';
   const loopLength = obstacles.length * OBSTACLE_SPACING;
   return obstacles.map((obstacle) => {
     const x = obstacle.x - OBSTACLE_SPEED * speedScale * dt;
     if (x + OBSTACLE_WIDTH < 0) {
-      return newObstacle(x + loopLength, screenHeight, gapSize, rules);
+      return newObstacle(x + loopLength, screenHeight, gapSize, rules, windChance);
     }
     return { ...obstacle, x };
   });

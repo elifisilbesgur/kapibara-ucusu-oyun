@@ -48,6 +48,10 @@ export const FLOAT_BOB = 3; // Suda bu kadar aşağı-yukarı sallanır (dp)
 export const FLOAT_BOB_SPEED = 2; // Sallanma hızı (radyan/sn)
 export const SPLASH_TIME = 0.5; // Su sıçraması bu kadar saniye görünür
 
+// Rüzgâr bölgesinin kenarında rüzgâr bu kadar dp içinde yavaşça güçlenir (ani savrulma olmasın)
+export const WIND_FADE = 40;
+export const LEAF_FLUTTER_FPS = 7; // Rüzgârda yaprak saniyede kaç kez titrer
+
 // Yolcu durağı (iskele): ortası su yüzeyinin bu kadar üstünde; bacaklar suyun içinde kalır
 export const DOCK_LIFT = 21;
 
