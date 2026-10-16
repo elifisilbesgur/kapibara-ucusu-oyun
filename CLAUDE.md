@@ -153,4 +153,7 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
     Toplayınca joyTime 0.5 sn (burak_happy), yeni parça süreyi sıfırlar. Kumbara sadece para olan modda.
   - Arka plan: `Sky` artık `floaters` (bulut yerleri) + `skyline` (kıyıda dizilen) alır.
     `art/office.ts` (monitör, kasa, sunucu, laptop, disket, imleç; soluk mavi), `OFFICE_SKY`.
+  - Oyun içi menü: `components/GameMenu.tsx`, sol üstte hamburger; açıkken `paused` shared value oyunu
+    dondurur. Mod seçince `router.replace('/game?mode=...')`; `app/game.tsx` GameScreen'e `key={mode.id}`
+    verir ki oyun sıfırdan kurulsun. Menü GestureDetector'ın DIŞINDA (kardeş), dokunuşu zıplatmaz.
   - Sıradaki: B5 (kasa göstergesi, bonus, kutlama).

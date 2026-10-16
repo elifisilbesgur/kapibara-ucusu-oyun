@@ -6,6 +6,7 @@ import { useDerivedValue, useFrameCallback, useSharedValue } from 'react-native-
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { Background } from '@/components/Background';
+import { GameMenu } from '@/components/GameMenu';
 import { Hud } from '@/components/Hud';
 import { Water } from '@/components/Water';
 import {
@@ -82,6 +83,7 @@ export default function GameScreen({ mode }: Props) {
   const scoreSV = useSharedValue(0);
   const runOrangesSV = useSharedValue(0);
   const msSinceGameOver = useSharedValue(0);
+  const paused = useSharedValue(false); // Menü açıkken her şey durur
   const level = useSharedValue(0); // 0-4: hangi mod
   const levelBlend = useSharedValue(0); // gökyüzü geçişi için yumuşak seviye
   const bannerTime = useSharedValue(0); // "yeni mod" yazısının kalan süresi
@@ -97,6 +99,7 @@ export default function GameScreen({ mode }: Props) {
   const joyTime = useSharedValue(0); // > 0 iken sevinçli yüz (gülümseme)
 
   useFrameCallback((frame) => {
+    if (paused.get()) return; // Menü açık: dünya donuk
     const dt = frameDeltaSeconds(frame.timeSincePreviousFrame);
 
     // Suya değdi: sıçrat, yüzme pozisyonuna geç.
@@ -229,6 +232,7 @@ export default function GameScreen({ mode }: Props) {
 
   // Parmak ekrana değdiği an (kaldırmayı beklemeden) tepki ver
   const tap = Gesture.Tap().onBegin(() => {
+    if (paused.get()) return;
     const current = phaseSV.get();
 
     if (current === 'falling') return; // Düşerken dokunuşlar yok sayılır
@@ -277,55 +281,59 @@ export default function GameScreen({ mode }: Props) {
   const slots = obstacleCount(width);
 
   return (
-    <GestureDetector gesture={tap}>
-      <View style={styles.container}>
-        <Canvas style={styles.container}>
-          <Group transform={shake}>
-            <Background
-              width={width}
-              height={height}
-              skies={view.skies}
-              levelBlend={levelBlend}
-            />
-            {Array.from({ length: slots }, (_, i) => (
-              <view.Obstacle key={i} obstacles={obstacles} index={i} screenHeight={height} />
-            ))}
-            {Array.from({ length: slots }, (_, i) => (
-              <view.Item key={i} obstacles={obstacles} index={i} clock={clock} />
-            ))}
-            <view.Player
-              x={playerX}
-              y={playerY}
-              velocity={velocity}
-              thrust={thrust}
-              propellerPhase={propellerPhase}
-              clock={clock}
-              passengers={passengers}
-              shieldTime={shieldTime}
-              level={level}
-              phase={phaseSV}
-              joyTime={joyTime}
-            />
-            {/* Deniz en önde: yüzen kapibaranın alt yarısı suyun içinde kalsın */}
-            <Water
-              width={width}
-              height={height}
-              scroll={waterScroll}
-              splashX={splashX}
-              splashTime={splashTime}
-            />
-          </Group>
-        </Canvas>
-        <Hud
-          phase={phase}
-          score={score}
-          runOranges={runOranges}
-          multiplier={multiplierFor(passengerCount)}
-          banner={banner}
-          showWallet={rules.items.some((item) => item.role === 'currency')}
-        />
-      </View>
-    </GestureDetector>
+    <View style={styles.container}>
+      <GestureDetector gesture={tap}>
+        <View style={styles.container}>
+          <Canvas style={styles.container}>
+            <Group transform={shake}>
+              <Background
+                width={width}
+                height={height}
+                skies={view.skies}
+                levelBlend={levelBlend}
+              />
+              {Array.from({ length: slots }, (_, i) => (
+                <view.Obstacle key={i} obstacles={obstacles} index={i} screenHeight={height} />
+              ))}
+              {Array.from({ length: slots }, (_, i) => (
+                <view.Item key={i} obstacles={obstacles} index={i} clock={clock} />
+              ))}
+              <view.Player
+                x={playerX}
+                y={playerY}
+                velocity={velocity}
+                thrust={thrust}
+                propellerPhase={propellerPhase}
+                clock={clock}
+                passengers={passengers}
+                shieldTime={shieldTime}
+                level={level}
+                phase={phaseSV}
+                joyTime={joyTime}
+              />
+              {/* Deniz en önde: yüzen kapibaranın alt yarısı suyun içinde kalsın */}
+              <Water
+                width={width}
+                height={height}
+                scroll={waterScroll}
+                splashX={splashX}
+                splashTime={splashTime}
+              />
+            </Group>
+          </Canvas>
+          <Hud
+            phase={phase}
+            score={score}
+            runOranges={runOranges}
+            multiplier={multiplierFor(passengerCount)}
+            banner={banner}
+            showWallet={rules.items.some((item) => item.role === 'currency')}
+          />
+        </View>
+      </GestureDetector>
+      {/* Menü dokunma algılayıcısının dışında ve üstünde: menüye dokunmak zıplatmaz */}
+      <GameMenu currentMode={mode.id} onOpenChange={(open) => paused.set(open)} />
+    </View>
   );
 }
 
