@@ -6,12 +6,14 @@ import {
   OBSTACLE_WIDTH,
 } from './constants';
 
-// Bir engel = üst ve alt bambu çifti. Sadece iki sayı yeterli:
-// x: engelin sol kenarı, gapY: geçidin ortasının yüksekliği.
-export type Obstacle = { x: number; gapY: number };
+// Bir engel = üst ve alt bambu çifti.
+// x: engelin sol kenarı, gapY: geçidin ortasının yüksekliği,
+// passed: oyuncu bu engeli geçti mi (puan bir kez sayılsın diye).
+export type Obstacle = { x: number; gapY: number; passed: boolean };
 
 // Ekranı dolduracak kadar engel var; fazlası gereksiz.
 export function obstacleCount(screenWidth: number): number {
+  'worklet';
   return Math.ceil((screenWidth + OBSTACLE_WIDTH) / OBSTACLE_SPACING);
 }
 
@@ -28,7 +30,11 @@ export function createObstacles(screenWidth: number, screenHeight: number): Obst
   'worklet';
   const obstacles: Obstacle[] = [];
   for (let i = 0; i < obstacleCount(screenWidth); i++) {
-    obstacles.push({ x: screenWidth + i * OBSTACLE_SPACING, gapY: randomGapY(screenHeight) });
+    obstacles.push({
+      x: screenWidth + i * OBSTACLE_SPACING,
+      gapY: randomGapY(screenHeight),
+      passed: false,
+    });
   }
   return obstacles;
 }
@@ -41,8 +47,25 @@ export function stepObstacles(obstacles: Obstacle[], dt: number, screenHeight: n
   return obstacles.map((obstacle) => {
     const x = obstacle.x - OBSTACLE_SPEED * dt;
     if (x + OBSTACLE_WIDTH < 0) {
-      return { x: x + loopLength, gapY: randomGapY(screenHeight) };
+      return { x: x + loopLength, gapY: randomGapY(screenHeight), passed: false };
     }
-    return { x, gapY: obstacle.gapY };
+    return { ...obstacle, x };
   });
+}
+
+// Sağ kenarı oyuncunun soluna geçen her engel bir puan. Kaç yeni puan kazanıldığını döndürür.
+export function markPassed(
+  obstacles: Obstacle[],
+  playerLeft: number,
+): { obstacles: Obstacle[]; newlyPassed: number } {
+  'worklet';
+  let newlyPassed = 0;
+  const updated = obstacles.map((obstacle) => {
+    if (!obstacle.passed && obstacle.x + OBSTACLE_WIDTH < playerLeft) {
+      newlyPassed++;
+      return { ...obstacle, passed: true };
+    }
+    return obstacle;
+  });
+  return { obstacles: updated, newlyPassed };
 }

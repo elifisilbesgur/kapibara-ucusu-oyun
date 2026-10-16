@@ -4,13 +4,15 @@
 export const PLAYER_RADIUS = 24; // Şimdilik kapibara yerine çizdiğimiz dairenin yarıçapı
 export const PLAYER_X_RATIO = 0.3; // Oyuncu ekran genişliğinin %30'unda sabit durur
 
-export const GRAVITY = 1800; // Hız her saniye bu kadar artar (dp/s²)
+export const GRAVITY = 1300; // Hız her saniye bu kadar artar (dp/s²)
 export const MAX_FALL_SPEED = 900; // Düşüş hızı bundan fazla olamaz (dp/s)
-export const JUMP_VELOCITY = -600; // Dokununca hız bu olur (eksi = yukarı)
+export const JUMP_VELOCITY = -480; // Dokununca hız bu olur (eksi = yukarı)
+export const PLAYER_HITBOX_INSET = 4; // Çarpışma kutusu daireden bu kadar küçük (affedici olsun)
+export const RESTART_DELAY_MS = 600; // Oyun bitince yanlışlıkla hemen yeniden başlamayı önler
 export const MAX_DT = 1 / 20; // Bir karede en fazla 50 ms ilerle (takılmada ışınlanmayı önler)
 
 export const OBSTACLE_WIDTH = 64; // Bir bambu kamışının kalınlığı
-export const OBSTACLE_GAP = 200; // Üst ve alt bambu arasındaki geçit yüksekliği
+export const OBSTACLE_GAP = 230; // Üst ve alt bambu arasındaki geçit yüksekliği
 export const OBSTACLE_SPACING = 260; // İki engel arasındaki yatay mesafe
 export const OBSTACLE_SPEED = 160; // Engellerin sola kayma hızı (dp/s)
 export const GAP_MARGIN = 80; // Geçit ekranın üstüne/altına bundan fazla yaklaşmaz

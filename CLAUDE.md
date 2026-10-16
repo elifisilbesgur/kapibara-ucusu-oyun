@@ -39,6 +39,8 @@ karlı dağ, gece şehri), gündüz-gece döngüsü, lo-fi müzik.
 
 ## Mimari
 Fizik ve kural mantığı `src/game/` altında saf TypeScript (worklet), React'ten bağımsız.
+`src/game/` içindeki HER fonksiyonun ilk satırı `'worklet';` olmalı; eksikse UI thread'den
+çağrıldığında uygulama çöker (dokunuş ve frame callback UI thread'de çalışır).
 
 ```
 src/
@@ -76,4 +78,7 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
   Tavanda geçici olarak duruyor.
 - Adım 4 tamam: `src/game/spawner.ts` (engel havuzu, sola kaydırma, soldan çıkanı en arkaya taşıma)
   + `src/components/Obstacle.tsx` (useDerivedValue ile iki Rect). Görünüm şimdilik düz yeşil dikdörtgen.
-- Sıradaki adım: 5 (çarpışma, skor, oyun sonu, tekrar başlat).
+- Adım 5 tamam: `collision.ts` (Box, intersects, playerBox, obstacleBoxes, isOutOfBounds),
+  `markPassed` ile skor, `components/Hud.tsx` (skor + mesajlar). Faz: ready → playing → over → ready.
+  Oyun durumu UI thread'de shared value; React state sadece Hud için, `scheduleOnRN` ile güncelleniyor.
+- Sıradaki adım: 6 (daireyi jetpackli, şapkalı kapibarayla değiştir).
