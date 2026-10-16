@@ -6,19 +6,9 @@ import { PASSENGER_ABILITIES, PASSENGER_NAMES } from '@/art/passengers';
 import { FriendPhoto, PHOTO_SIZE } from '@/components/FriendPhoto';
 import { PASSENGER_KINDS, RARE_PASSENGERS } from '@/game/passengers';
 import { useGameStore, type FriendEntry } from '@/store/useGameStore';
+import { formatDate } from '@/utils/formatDate';
 
 const DARK = '#3B2414';
-const MONTHS = [
-  'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-  'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
-];
-
-// "2026-10-17T..." → "17 Ekim 2026" (cihazın dil ayarından bağımsız)
-function formatDate(iso: string) {
-  const date = new Date(iso);
-  return `${date.getDate()} ${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
-}
-
 // Arkadaş defteri: sırta binen her tür için bir anı fotoğrafı
 export default function Album() {
   const insets = useSafeAreaInsets();

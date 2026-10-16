@@ -10,6 +10,7 @@ import { Background } from '@/components/Background';
 import { Confetti } from '@/components/Confetti';
 import { GameMenu } from '@/components/GameMenu';
 import { Hud, type Banner } from '@/components/Hud';
+import { RecordCard, type RecordInfo } from '@/components/RecordCard';
 import { Water } from '@/components/Water';
 import {
   hapticHit,
@@ -108,8 +109,22 @@ export default function GameScreen({ mode }: Props) {
   const meetFriends = useGameStore((state) => state.meetFriends);
 
   // Oyun bitti (JS tarafı): skoru kaydet, rekorsa panelde "Yeni rekor!" yazsın
-  const handleGameOver = (finalScore: number) => {
-    setNewRecord(submitScore(mode.id, finalScore));
+  const [recordInfo, setRecordInfo] = useState<RecordInfo | null>(null); // Rekor kartı için
+
+  // Oyun bitti (JS tarafı): skoru kaydet; rekorsa panelde "Yeni rekor!" ve rekor kartı düğmesi
+  const handleGameOver = (finalScore: number, finalPassengers: PassengerKind[], finalLevel: number) => {
+    const isRecord = submitScore(mode.id, finalScore);
+    setNewRecord(isRecord);
+    if (!isRecord) return;
+    setRecordInfo({
+      modeId: mode.id,
+      modeName: mode.name,
+      score: finalScore,
+      passengers: finalPassengers,
+      level: finalLevel,
+      levelName: rules.levels[finalLevel].name,
+      skyBands: (view.skies[finalLevel] ?? view.skies[0]).bands,
+    });
   };
 
   // UI thread tarafı: oyunun kendisi (her karede değişir)
@@ -171,7 +186,7 @@ export default function GameScreen({ mode }: Props) {
       splashTime.set(SPLASH_TIME);
       scheduleOnRN(hapticSplash);
       scheduleOnRN(soundSplash);
-      scheduleOnRN(handleGameOver, scoreSV.get());
+      scheduleOnRN(handleGameOver, scoreSV.get(), passengers.get(), level.get());
       if (pendingSV.get() > 0) scheduleOnRN(setLostPending, pendingSV.get()); // Sırttaki bonus gitti
       scheduleOnRN(setPhase, 'over');
     };
@@ -388,6 +403,7 @@ export default function GameScreen({ mode }: Props) {
       scheduleOnRN(setBanner, null);
       scheduleOnRN(setKitMask, 0);
       scheduleOnRN(setNewRecord, false);
+      scheduleOnRN(setRecordInfo, null);
       scheduleOnRN(setPending, 0);
       scheduleOnRN(setLostPending, 0);
       scheduleOnRN(setPhase, 'ready');
@@ -487,6 +503,8 @@ export default function GameScreen({ mode }: Props) {
       </GestureDetector>
       {/* Menü dokunma algılayıcısının dışında ve üstünde: menüye dokunmak zıplatmaz */}
       <GameMenu currentMode={mode.id} onOpenChange={(open) => paused.set(open)} />
+      {/* Rekor kartı da algılayıcının dışında: düğmeye dokunmak oyunu yeniden başlatmaz */}
+      {phase === 'over' && <RecordCard record={recordInfo} />}
     </View>
   );
 }

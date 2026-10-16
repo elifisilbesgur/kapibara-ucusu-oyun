@@ -224,4 +224,10 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
   `useState(() => ...)` + `useMemo` ile bir kez hesaplar. Yetenekler: baykuş → uykululuk birikmez,
   penguen → rüzgâr etkilemez, flamingo → çarpanda 2 sayılır (`multiplierCount`). Ana menüde "Günün yolcusu",
   defterde "NADİR" etiketi.
-- Sıradaki adım: 10 (cila) ya da 16 (fotoğraf modu).
+- Adım 16 tamam (fotoğraf modu): rekor kırılınca oyun sonunda "📸 Rekor kartı" (`components/RecordCard.tsx`,
+  GestureDetector dışında). Kart tamamen Skia (yazılar `matchFont` sistem yazı tipi + gölge): ulaşılan
+  seviyenin gökyüzü, "YENİ REKOR!", skor, kapibara o seviyenin kıyafeti (`GEAR`) + sırttaki bütün
+  yolcular + gülümseme (Burak modunda Burak), alt şeritte mod · seviye · tarih. Paylaş:
+  `canvasRef.makeImageSnapshotAsync()` → `encodeToBytes(PNG)` → `File(Paths.cache)` → `Sharing.shareAsync`.
+  `handleGameOver(score, passengers, level)`. Tarih biçimi `utils/formatDate.ts` (defter de kullanır).
+- Sıradaki adım: 10 (cila: titreşim aç/kapa, ikon, açılış ekranı).
