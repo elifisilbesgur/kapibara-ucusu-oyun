@@ -156,4 +156,8 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
   - Oyun içi menü: `components/GameMenu.tsx`, sol üstte hamburger; açıkken `paused` shared value oyunu
     dondurur. Mod seçince `router.replace('/game?mode=...')`; `app/game.tsx` GameScreen'e `key={mode.id}`
     verir ki oyun sıfırdan kurulsun. Menü GestureDetector'ın DIŞINDA (kardeş), dokunuşu zıplatmaz.
-  - Sıradaki: B5 (kasa göstergesi, bonus, kutlama).
+  - B5 tamam: kasa `rules.kit` (isteğe bağlı; Burak: cpu/ram/gpu/ssd, bonus 10). Mantık `game/kit.ts`
+    (bit maskesi: addToKit/hasPart/fullMask). Hud'da skorun altında KitBar (1x ikonlar, eksikler soluk).
+    Tamamlanınca: +bonus, `Confetti.tsx` (28 piksel parçacık, sözde rastgele, CELEBRATION_TIME 1.2 sn),
+    başarı titreşimi, banner. Banner artık { label, title } (yeni mod / kasa tamam).
+  - Sıradaki: B6 (ana menü, moda göre en yüksek skor, "Yeni rekor!").

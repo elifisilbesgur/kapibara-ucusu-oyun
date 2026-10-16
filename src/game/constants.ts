@@ -48,6 +48,9 @@ export const FLOAT_BOB = 3; // Suda bu kadar aşağı-yukarı sallanır (dp)
 export const FLOAT_BOB_SPEED = 2; // Sallanma hızı (radyan/sn)
 export const SPLASH_TIME = 0.5; // Su sıçraması bu kadar saniye görünür
 
+// Kasa kutlaması (Burak Uçuyor)
+export const CELEBRATION_TIME = 1.2; // Konfeti bu kadar saniye uçuşur
+
 // His
 export const SHAKE_TIME = 0.35; // Çarpınca ekran bu kadar saniye sarsılır
 export const SHAKE_AMOUNT = 6; // En fazla bu kadar dp kayar

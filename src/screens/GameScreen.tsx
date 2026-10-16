@@ -6,8 +6,9 @@ import { useDerivedValue, useFrameCallback, useSharedValue } from 'react-native-
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { Background } from '@/components/Background';
+import { Confetti } from '@/components/Confetti';
 import { GameMenu } from '@/components/GameMenu';
-import { Hud } from '@/components/Hud';
+import { Hud, type Banner } from '@/components/Hud';
 import { Water } from '@/components/Water';
 import {
   hapticHit,
@@ -19,6 +20,7 @@ import {
 import { stepPropeller, stepThrust } from '@/game/animation';
 import { hitsAnyObstacle, isOutOfBounds, playerBox } from '@/game/collision';
 import {
+  CELEBRATION_TIME,
   FLOAT_BOB,
   FLOAT_BOB_SPEED,
   HIT_BOUNCE,
@@ -34,6 +36,7 @@ import {
   WATER_HEIGHT,
 } from '@/game/constants';
 import { collectItems } from '@/game/items';
+import { addToKit } from '@/game/kit';
 import { levelFor, stepLevelBlend } from '@/game/levels';
 import {
   gravityScale,
@@ -69,7 +72,8 @@ export default function GameScreen({ mode }: Props) {
   const [score, setScore] = useState(0);
   const [runOranges, setRunOranges] = useState(0);
   const [passengerCount, setPassengerCount] = useState(0);
-  const [banner, setBanner] = useState<string | null>(null); // "Yeni mod: Balon" gibi
+  const [banner, setBanner] = useState<Banner | null>(null); // "Yeni mod: Balon" gibi
+  const [kitMask, setKitMask] = useState(0); // Kasada hangi parçalar var (bit maskesi)
   const addOranges = useGameStore((state) => state.addOranges);
 
   // UI thread tarafı: oyunun kendisi (her karede değişir)
@@ -97,6 +101,10 @@ export default function GameScreen({ mode }: Props) {
   const splashTime = useSharedValue(0);
   const shakeTime = useSharedValue(0);
   const joyTime = useSharedValue(0); // > 0 iken sevinçli yüz (gülümseme)
+  const kitMaskSV = useSharedValue(0);
+  const celebrationTime = useSharedValue(0); // > 0 iken konfeti uçuşur
+  const confettiX = useSharedValue(0);
+  const confettiY = useSharedValue(0);
 
   useFrameCallback((frame) => {
     if (paused.get()) return; // Menü açık: dünya donuk
@@ -125,6 +133,7 @@ export default function GameScreen({ mode }: Props) {
     splashTime.set(Math.max(0, splashTime.get() - dt));
     shakeTime.set(Math.max(0, shakeTime.get() - dt));
     joyTime.set(Math.max(0, joyTime.get() - dt));
+    celebrationTime.set(Math.max(0, celebrationTime.get() - dt));
     if (bannerTime.get() > 0) {
       bannerTime.set(bannerTime.get() - dt);
       if (bannerTime.get() <= 0) scheduleOnRN(setBanner, null);
@@ -189,6 +198,22 @@ export default function GameScreen({ mode }: Props) {
       gained += picked.partPoints;
       joyTime.set(rules.joyTime); // Yeni parça süreyi baştan başlatır
       scheduleOnRN(hapticOrange);
+
+      // Kasa: her türden biri toplanınca bonus + kutlama, kasa sıfırlanır
+      if (rules.kit) {
+        const kit = addToKit(kitMaskSV.get(), picked.parts, rules.kit.parts);
+        kitMaskSV.set(kit.mask);
+        scheduleOnRN(setKitMask, kit.mask);
+        if (kit.completed) {
+          gained += rules.kit.bonus;
+          celebrationTime.set(CELEBRATION_TIME);
+          confettiX.set(playerX);
+          confettiY.set(playerY.get());
+          bannerTime.set(LEVEL_BANNER_TIME);
+          scheduleOnRN(setBanner, { label: 'Kasa tamam!', title: `+${rules.kit.bonus} bonus` });
+          scheduleOnRN(hapticLevelUp);
+        }
+      }
     }
 
     if (gained > 0) {
@@ -200,7 +225,7 @@ export default function GameScreen({ mode }: Props) {
       if (newLevel > level.get()) {
         level.set(newLevel);
         bannerTime.set(LEVEL_BANNER_TIME);
-        scheduleOnRN(setBanner, rules.levels[newLevel].name);
+        scheduleOnRN(setBanner, { label: 'Yeni mod', title: rules.levels[newLevel].name });
         scheduleOnRN(hapticLevelUp);
       }
     }
@@ -248,6 +273,8 @@ export default function GameScreen({ mode }: Props) {
       level.set(0);
       levelBlend.set(0);
       bannerTime.set(0);
+      kitMaskSV.set(0);
+      celebrationTime.set(0);
       scoreSV.set(0);
       runOrangesSV.set(0);
       phaseSV.set('ready');
@@ -255,6 +282,7 @@ export default function GameScreen({ mode }: Props) {
       scheduleOnRN(setRunOranges, 0);
       scheduleOnRN(setPassengerCount, 0);
       scheduleOnRN(setBanner, null);
+      scheduleOnRN(setKitMask, 0);
       scheduleOnRN(setPhase, 'ready');
       return;
     }
@@ -311,6 +339,7 @@ export default function GameScreen({ mode }: Props) {
                 phase={phaseSV}
                 joyTime={joyTime}
               />
+              <Confetti time={celebrationTime} originX={confettiX} originY={confettiY} />
               {/* Deniz en önde: yüzen kapibaranın alt yarısı suyun içinde kalsın */}
               <Water
                 width={width}
@@ -328,6 +357,7 @@ export default function GameScreen({ mode }: Props) {
             multiplier={multiplierFor(passengerCount)}
             banner={banner}
             showWallet={rules.items.some((item) => item.role === 'currency')}
+            kit={rules.kit && { parts: rules.kit.parts, mask: kitMask }}
           />
         </View>
       </GestureDetector>

@@ -2,23 +2,29 @@ import { Canvas, Group } from '@shopify/react-native-skia';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { PART_SPRITES } from '@/art/images';
 import { ORANGE } from '@/art/world';
+import { PixelImage } from '@/components/PixelImage';
 import { PixelSprite } from '@/components/PixelSprite';
 import { ITEM_SIZE, PIXEL_SIZE } from '@/game/constants';
+import { hasPart } from '@/game/kit';
 import type { GamePhase } from '@/game/phase';
 import { useGameStore } from '@/store/useGameStore';
+
+export type Banner = { label: string; title: string }; // ör. "Yeni mod" / "Balon"
 
 type Props = {
   phase: GamePhase;
   score: number;
   runOranges: number; // Bu oyunda toplanan portakal
   multiplier: number; // Yolculardan gelen puan çarpanı (1 = yolcusuz)
-  banner: string | null; // Yeni moda geçince kısa süre görünen mod adı
+  banner: Banner | null; // Kısa süre görünen duyuru (yeni mod, kasa tamam)
   showWallet: boolean; // Portakal kumbarası (sadece parası olan modlarda)
+  kit?: { parts: string[]; mask: number }; // Kasa göstergesi (sadece kasası olan modlarda)
 };
 
 // Oyunun üstündeki yazılar. pointerEvents="none": dokunuşlar alttaki oyuna geçsin.
-export function Hud({ phase, score, runOranges, multiplier, banner, showWallet }: Props) {
+export function Hud({ phase, score, runOranges, multiplier, banner, showWallet, kit }: Props) {
   const insets = useSafeAreaInsets();
   const totalOranges = useGameStore((state) => state.totalOranges);
 
@@ -32,12 +38,13 @@ export function Hud({ phase, score, runOranges, multiplier, banner, showWallet }
       )}
 
       <Text style={[styles.score, { marginTop: insets.top + 24 }]}>{score}</Text>
+      {kit && <KitBar parts={kit.parts} mask={kit.mask} />}
       {multiplier > 1 && <Text style={styles.multiplier}>×{multiplier.toFixed(1)}</Text>}
 
       {banner && phase === 'playing' && (
         <View style={styles.banner}>
-          <Text style={styles.bannerLabel}>Yeni mod</Text>
-          <Text style={styles.bannerName}>{banner}</Text>
+          <Text style={styles.bannerLabel}>{banner.label}</Text>
+          <Text style={styles.bannerName}>{banner.title}</Text>
         </View>
       )}
 
@@ -55,6 +62,26 @@ export function Hud({ phase, score, runOranges, multiplier, banner, showWallet }
           <Text style={styles.message}>Tekrar için dokun</Text>
         </View>
       )}
+    </View>
+  );
+}
+
+// Kasa: her parça için bir yuva; toplananlar tam renkli, eksikler soluk
+function KitBar({ parts, mask }: { parts: string[]; mask: number }) {
+  return (
+    <View style={styles.kit}>
+      <Text style={styles.kitLabel}>KASA</Text>
+      {parts.map((id) => {
+        const sprite = PART_SPRITES[id];
+        return (
+          <View key={id} style={[styles.kitSlot, !hasPart(mask, parts, id) && styles.kitSlotEmpty]}>
+            {/* 1x çizim: her sanat pikseli 1 dp (tam sayı ölçek, keskin) */}
+            <Canvas style={{ width: sprite.width, height: sprite.height }}>
+              <PixelImage sprite={sprite} />
+            </Canvas>
+          </View>
+        );
+      })}
     </View>
   );
 }
@@ -100,6 +127,33 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.35)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
+  },
+  kit: {
+    marginTop: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: 'rgba(59, 36, 20, 0.6)',
+  },
+  kitLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#FFD23F',
+    letterSpacing: 1,
+  },
+  kitSlot: {
+    width: 34,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+  },
+  kitSlotEmpty: {
+    opacity: 0.3,
   },
   multiplier: {
     fontSize: 22,

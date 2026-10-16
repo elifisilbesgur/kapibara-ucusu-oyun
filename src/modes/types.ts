@@ -42,6 +42,8 @@ export type ModeRules = {
   levels: LevelRule[];
   joyTime: number; // Toplayınca sevinme (gülümseme) süresi (sn)
   floatLift: number; // Suda yüzerken gövde ortası su yüzeyinin bu kadar üstünde (dp)
+  // Kasa (isteğe bağlı): bu parçaların her birinden en az biri toplanınca bonus
+  kit?: { parts: string[]; bonus: number };
 };
 
 // --- Görünüm: React bileşenleri. Sadece çizim tarafı kullanır.

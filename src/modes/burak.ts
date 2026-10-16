@@ -37,6 +37,8 @@ export const BURAK_MODE: GameMode = {
     levels: [{ name: 'Burak', minScore: 0, gravity: 1, jump: 1, maxFall: 900, speed: 1 }],
     joyTime: 0.5, // Parçaya değince 500 ms gülme
     floatLift: 13, // Suda dik sallanırken bacaklar suyun içinde
+    // Kasa: her türden en az bir parça → +10 bonus, kutlama, kasa sıfırlanır
+    kit: { parts: ['cpu', 'ram', 'gpu', 'ssd'], bonus: 10 },
   },
   view: {
     Player: BurakPlayer,
