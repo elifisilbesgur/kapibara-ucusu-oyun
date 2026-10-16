@@ -30,18 +30,16 @@ export function playerBox(cx: number, cy: number, size: { width: number; height:
 // inset: kutular görselden bu kadar küçük (x: yanlardan, y: geçide bakan uçtan)
 // → "değmedim ki" hissi olmasın.
 export type Inset = { x: number; y: number };
-const NO_INSET: Inset = { x: 0, y: 0 };
 
-export function obstacleBoxes(
-  obstacle: Obstacle,
-  screenHeight: number,
-  inset: Inset = NO_INSET,
-): [Box, Box] {
+// (Varsayılanı gövdede veriyoruz; bkz. physics.ts'teki stepVelocity notu.)
+export function obstacleBoxes(obstacle: Obstacle, screenHeight: number, inset?: Inset): [Box, Box] {
   'worklet';
-  const topHeight = obstacle.gapY - obstacle.gapSize / 2 - inset.y;
-  const bottomY = obstacle.gapY + obstacle.gapSize / 2 + inset.y;
-  const x = obstacle.x + inset.x;
-  const width = OBSTACLE_WIDTH - inset.x * 2;
+  const insetX = inset?.x ?? 0;
+  const insetY = inset?.y ?? 0;
+  const topHeight = obstacle.gapY - obstacle.gapSize / 2 - insetY;
+  const bottomY = obstacle.gapY + obstacle.gapSize / 2 + insetY;
+  const x = obstacle.x + insetX;
+  const width = OBSTACLE_WIDTH - insetX * 2;
   return [
     { x, y: 0, width, height: topHeight },
     { x, y: bottomY, width, height: screenHeight - bottomY },
@@ -52,7 +50,7 @@ export function hitsAnyObstacle(
   player: Box,
   obstacles: Obstacle[],
   screenHeight: number,
-  inset: Inset = NO_INSET,
+  inset?: Inset,
 ): boolean {
   'worklet';
   for (const obstacle of obstacles) {

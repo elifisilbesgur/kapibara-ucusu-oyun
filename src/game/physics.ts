@@ -12,15 +12,18 @@ export function frameDeltaSeconds(ms: number | null): number {
 }
 
 // velocity += gravity * dt
-// gravityScale: mod ve yolcuların etkisi (1 = etkisiz), maxFall: o modun en yüksek düşüş hızı
+// gravityScale: mod ve yolcuların etkisi (1 = etkisiz), maxFall: o modun en yüksek düşüş hızı.
+// DİKKAT: varsayılan değer parametre listesinde DEĞİL gövdede (`??`). Worklet'te dış sabitler
+// gövdenin ilk satırında açılır; `maxFall = MAX_FALL_SPEED` yazılırsa UI thread'de sabit henüz
+// tanımsızken okunur ve uygulama çöker (çarpınca kapanma hatası buydu).
 export function stepVelocity(
   velocity: number,
   dt: number,
   gravityScale = 1,
-  maxFall = MAX_FALL_SPEED,
+  maxFall?: number,
 ): number {
   'worklet';
-  return Math.min(velocity + GRAVITY * gravityScale * dt, maxFall);
+  return Math.min(velocity + GRAVITY * gravityScale * dt, maxFall ?? MAX_FALL_SPEED);
 }
 
 // y += velocity * dt

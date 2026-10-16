@@ -46,8 +46,11 @@ karlı dağ, gece şehri), gündüz-gece döngüsü, lo-fi müzik.
 Fizik ve kural mantığı `src/game/` altında saf TypeScript (worklet), React'ten bağımsız.
 `src/game/` içindeki HER fonksiyonun ilk satırı `'worklet';` olmalı; eksikse UI thread'den
 çağrıldığında uygulama çöker (dokunuş ve frame callback UI thread'de çalışır).
-Bileşen gövdesinde `'worklet'` fonksiyonu TANIMLAMA (React Compiler açık, yeniden yazıp bozabiliyor;
-suya düşünce çökme buydu). Yardımcı gerekiyorsa ya `src/game/` içine ya da useFrameCallback'in içine koy.
+Worklet'te varsayılan parametre DIŞ bir sabite bakmasın (`maxFall = MAX_FALL_SPEED` YASAK): derlenmiş
+kodda parametre, `this.__closure` açılmadan önce değerlendirilir → sabit tanımsız → uygulama kapanır
+(çarpınca kapanma hatası buydu). Varsayılanı gövdede ver: `maxFall ?? MAX_FALL_SPEED`. Sayı sabiti (`= 1`) sorun değil.
+Tedbir olarak bileşen gövdesinde ayrı `'worklet'` fonksiyonu da tanımlama (React Compiler açık);
+yardımcı gerekiyorsa `src/game/` içine ya da useFrameCallback'in içine koy.
 
 ```
 src/
@@ -141,7 +144,8 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
     PIVOT gövde ortası 14.5,16.5), `components/CableObstacle.tsx` (uçlar PixelImage, gövde tek Rect +
     ImageShader ty="repeat"). Hitbox 13x28 px (jetpack hariç). Geçit 290 → 230 (puan başına 1 dp).
     `obstacleInset` artık {x, y}: kabloda yandan 4, uçtan 2 piksel (karo 18 px ama kablo 9-13 px).
-  - Çökme düzeltmesi: `fallIntoWater` bileşen gövdesinde worklet'ti → useFrameCallback içine taşındı.
+  - Çarpınca kapanma düzeltildi: sebep `stepVelocity`'deki `maxFall = MAX_FALL_SPEED` varsayılan parametresi
+    (düşerken bu varsayılan kullanılıyordu; worklet'te tanımsız). Varsayılanlar gövdeye alındı (physics, collision).
   - Burak küçüldü: Burak ve parçalar `BURAK_PIXEL` = 2 ile çizilir (kablo/deniz/arka plan 3).
     Hitbox 26x56 dp, geçit 260 → 200, floatLift 13.
   - B4 tamam: parçalar `components/PartItem.tsx`; kurallar RAM 0.24/1p, SSD 0.18/2p, CPU 0.12/3p,
