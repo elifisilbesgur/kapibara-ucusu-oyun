@@ -55,7 +55,12 @@ import {
   type PassengerKind,
 } from '@/game/passengers';
 import type { GamePhase } from '@/game/phase';
-import { frameDeltaSeconds, stepPosition, stepVelocity } from '@/game/physics';
+import {
+  frameDeltaSeconds,
+  stepDrowsiness,
+  stepPosition,
+  stepVelocity,
+} from '@/game/physics';
 import {
   createObstacles,
   gapSizeFor,
@@ -123,6 +128,7 @@ export default function GameScreen({ mode }: Props) {
   const splashTime = useSharedValue(0);
   const shakeTime = useSharedValue(0);
   const joyTime = useSharedValue(0); // > 0 iken sevinçli yüz (gülümseme)
+  const drowsiness = useSharedValue(0); // 0 dinç → 1 uyuyor (sadece uykululuğu olan modda artar)
   const kitMaskSV = useSharedValue(0);
   const celebrationTime = useSharedValue(0); // > 0 iken konfeti uçuşur
   const confettiX = useSharedValue(0);
@@ -181,11 +187,17 @@ export default function GameScreen({ mode }: Props) {
       return;
     }
 
+    // Uykululuk: hazır ekranında beklerken de, uçarken de birikir (portakal ya da dokunuş ayıltır)
+    if (rules.drowsiness) {
+      drowsiness.set(stepDrowsiness(drowsiness.get(), dt, rules.drowsiness.fullAfter));
+    }
+
     if (current !== 'playing') return; // Hazırken dünya donuk
 
-    // Fizik: modun kendi hissi x yolcuların ağırlığı
+    // Fizik: modun kendi hissi x yolcuların ağırlığı x uykululuk
     const stage = rules.levels[level.get()];
-    const gravity = stage.gravity * gravityScale(passengers.get());
+    const sleepy = 1 + (rules.drowsiness?.gravityGain ?? 0) * drowsiness.get();
+    const gravity = stage.gravity * gravityScale(passengers.get()) * sleepy;
     velocity.set(stepVelocity(velocity.get(), dt, gravity, stage.maxFall));
     playerY.set(stepPosition(playerY.get(), velocity.get(), dt));
     const gapSize = gapSizeFor(scoreSV.get(), rules); // Yeni gelen engeller bu boyla kurulur
@@ -218,6 +230,7 @@ export default function GameScreen({ mode }: Props) {
     if (picked.currency > 0) {
       runOrangesSV.set(runOrangesSV.get() + picked.currency);
       joyTime.set(rules.joyTime);
+      drowsiness.set(0); // Portakal ayıltır
       scheduleOnRN(setRunOranges, runOrangesSV.get());
       scheduleOnRN(addOranges, picked.currency);
       scheduleOnRN(hapticOrange);
@@ -328,6 +341,7 @@ export default function GameScreen({ mode }: Props) {
       shieldTime.set(0);
       level.set(0);
       levelBlend.set(0);
+      drowsiness.set(0);
       bannerTime.set(0);
       kitMaskSV.set(0);
       celebrationTime.set(0);
@@ -349,11 +363,15 @@ export default function GameScreen({ mode }: Props) {
 
     if (current === 'ready') {
       phaseSV.set('playing');
+      drowsiness.set(0); // Beklerken uyukladıysa ilk dokunuşta ayılır
       scheduleOnRN(setPhase, 'playing');
     }
 
-    // Zıplama gücü: seviyenin kendi itişi x yolcular (kuş güçlendirir, diğerleri zayıflatır)
-    velocity.set(JUMP_VELOCITY * rules.levels[level.get()].jump * jumpScale(passengers.get()));
+    // Zıplama gücü: seviyenin itişi x yolcular (kuş güçlendirir, diğerleri zayıflatır) x uykululuk
+    const awake = 1 - (rules.drowsiness?.jumpLoss ?? 0) * drowsiness.get();
+    velocity.set(
+      JUMP_VELOCITY * rules.levels[level.get()].jump * jumpScale(passengers.get()) * awake,
+    );
     thrust.set(1); // Alev büyüsün, pervane hızlansın, kanat çırpsın
     scheduleOnRN(soundJump);
   });
@@ -400,6 +418,7 @@ export default function GameScreen({ mode }: Props) {
                 level={level}
                 phase={phaseSV}
                 joyTime={joyTime}
+                drowsiness={drowsiness}
               />
               <Confetti time={celebrationTime} originX={confettiX} originY={confettiY} />
               {/* Deniz en önde: yüzen kapibaranın alt yarısı suyun içinde kalsın */}

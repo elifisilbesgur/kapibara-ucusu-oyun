@@ -198,4 +198,9 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
   güvende, yolcu çarpanından gelen bonus `pendingSV`'de birikir ("sırtta +N"). Durağa yolcuyla değince:
   bonus skora, yolcular iner (çarpan/ağırlık sıfır), bayrak iner (`stop_used`). Çarpınca sırttaki
   bonus kaybolur (Hud: "Sırttaki +N kayboldu"). Durağı olmayan modda bonus doğrudan skora gider.
-- Sıradaki adım: 10, 11, 13–16'dan biri.
+- Adım 11 tamam (esneme): `rules.drowsiness` (kapibara: 14 sn'de dolar, zıplama −%12, yerçekimi +%10).
+  Dokunuş değil ZAMAN tabanlı (uçarken dokunmamak zaten suya düşürür): portakal yemeden uçtukça ve
+  hazır ekranında beklerken birikir; portakal ya da ilk dokunuş ayıltır. Yüz: ≥0.5 yarı kapalı göz
+  (EYES_HALF), ≥0.6 her 4 sn'de esneme (YAWN), ≥0.85 kapalı göz + yükselen "z" (SNORE_Z);
+  suda sırtüstü yüzerken de "z". PlayerProps'a `drowsiness` eklendi (Burak kullanmaz).
+- Sıradaki adım: 10, 13–16'dan biri.

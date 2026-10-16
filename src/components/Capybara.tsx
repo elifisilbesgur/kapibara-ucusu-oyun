@@ -7,6 +7,7 @@ import {
   BODY,
   CAP,
   EYES_CLOSED,
+  EYES_HALF,
   FLAME_BIG,
   FLAME_SMALL,
   JETPACK,
@@ -14,7 +15,9 @@ import {
   PIVOT,
   PROPELLER_FRAMES,
   SMILE,
+  SNORE_Z,
   WING_FRAMES,
+  YAWN,
 } from '@/art/capybara';
 import { PASSENGER_PIXEL_HEIGHT, PASSENGER_SPRITES } from '@/art/passengers';
 import { PixelSprite, SpriteFrames } from '@/components/PixelSprite';
@@ -31,6 +34,12 @@ const PROPELLER_COUNT = PROPELLER_FRAMES.length;
 const STACK = { x: 3, baseY: 4 };
 const STACK_FLOATING = { x: 8, baseY: 3 };
 const BLINK_FPS = 12; // Kalkan varken saniyede kaç kez yanıp söner
+// Uykululuk eşikleri: yarı kapalı göz → esneme → uyku (kapalı göz + z)
+const DROWSY_HALF = 0.5;
+const DROWSY_YAWN = 0.6;
+const DROWSY_SLEEP = 0.85;
+const YAWN_EVERY = 4; // Kaç saniyede bir esner
+const YAWN_LENGTH = 0.9; // Esneme ne kadar sürer
 
 // Seviye → mod: 0 yaprak, 1 balon, 2 pervaneli şapka, 3 kuş kanadı, 4 jetpack + şapka
 const MODE = { leaf: 0, balloon: 1, propeller: 2, wings: 3, jetpack: 4 };
@@ -47,6 +56,7 @@ export function Capybara({
   level,
   phase,
   joyTime,
+  drowsiness,
 }: PlayerProps) {
   // Dönüşümler sırayla: yerine taşı → eğ → büyüt → gövde ortasını merkeze al
   const transform = useDerivedValue(() => [
@@ -78,11 +88,36 @@ export function Capybara({
       ? [{ translateY: 2 * PIVOT.y }, { scaleY: -1 }]
       : [{ translateY: 0 }, { scaleY: 1 }],
   );
-  const floatingOpacity = useDerivedValue<number>(() => (phase.get() === 'over' ? 1 : 0));
   const flyingOpacity = useDerivedValue<number>(() => (phase.get() === 'over' ? 0 : 1));
   const smileOpacity = useDerivedValue<number>(() =>
     joyTime.get() > 0 && phase.get() !== 'over' ? 1 : 0,
   );
+
+  // Yüz: suda yüzerken ya da çok uykuluyken gözler kapalı; biraz uykuluyken yarı kapalı
+  const sleeping = useDerivedValue(
+    () => phase.get() === 'over' || drowsiness.get() >= DROWSY_SLEEP,
+  );
+  const eyesClosedOpacity = useDerivedValue<number>(() => (sleeping.get() ? 1 : 0));
+  const eyesHalfOpacity = useDerivedValue<number>(() =>
+    !sleeping.get() && drowsiness.get() >= DROWSY_HALF ? 1 : 0,
+  );
+  // Esneme: uykuluyken her YAWN_EVERY saniyede bir, YAWN_LENGTH saniye
+  const yawnOpacity = useDerivedValue<number>(() =>
+    phase.get() !== 'over' &&
+    drowsiness.get() >= DROWSY_YAWN &&
+    clock.get() % YAWN_EVERY < YAWN_LENGTH
+      ? 1
+      : 0,
+  );
+  // "z": uyurken başın üstünde yükselip solar, sonra baştan
+  const snoreTransform = useDerivedValue(() => {
+    const rise = (clock.get() % 1.5) / 1.5; // 0 → 1
+    return [{ translateX: 19 + Math.round(rise * 2) }, { translateY: -2 - Math.round(rise * 5) }];
+  });
+  const snoreOpacity = useDerivedValue(() => {
+    if (!sleeping.get() || phase.get() === 'falling') return 0;
+    return 1 - (clock.get() % 1.5) / 1.5;
+  });
 
   // Kaplumbağa çarpmayı karşıladıysa kısa süre yanıp sön
   const opacity = useDerivedValue(() => {
@@ -95,7 +130,12 @@ export function Capybara({
       <Group transform={bodyTransform}>
         <PixelSprite sprite={BODY} />
         <PixelSprite sprite={SMILE} opacity={smileOpacity} />
-        <PixelSprite sprite={EYES_CLOSED} opacity={floatingOpacity} />
+        <PixelSprite sprite={YAWN} opacity={yawnOpacity} />
+        <PixelSprite sprite={EYES_HALF} opacity={eyesHalfOpacity} />
+        <PixelSprite sprite={EYES_CLOSED} opacity={eyesClosedOpacity} />
+      </Group>
+      <Group transform={snoreTransform}>
+        <PixelSprite sprite={SNORE_Z} opacity={snoreOpacity} />
       </Group>
 
       {/* Modun parçaları sadece uçarken; suya düşünce hepsi gider */}

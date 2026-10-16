@@ -36,6 +36,8 @@ export const CAPYBARA_MODE: GameMode = {
     ],
     joyTime: 0.9, // Portakal yiyince minicik gülümseme
     floatLift: 18, // Sırtüstü yüzerken
+    // Portakal yemeden 14 sn uçunca tamamen uykulu: zıplama %12 zayıf, yerçekimi %10 güçlü
+    drowsiness: { fullAfter: 14, jumpLoss: 0.12, gravityGain: 0.1 },
   },
   view: {
     Player: Capybara,

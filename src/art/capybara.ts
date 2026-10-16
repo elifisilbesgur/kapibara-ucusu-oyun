@@ -33,6 +33,12 @@ export const PIVOT = { x: 14, y: 9 };
 // Gülümseme (portakal yiyince) ve kapalı gözler (suda sırtüstü yüzerken).
 export const SMILE: Sprite = { offsetX: 18, offsetY: 9, rows: ['K.K', '.K.'] };
 export const EYES_CLOSED: Sprite = { offsetX: 17, offsetY: 5, rows: ['BB', 'KK'] };
+// Uykulu: göz kapağı yarıya inmiş (üst yarı kapak, alt yarı göz)
+export const EYES_HALF: Sprite = { offsetX: 17, offsetY: 5, rows: ['KK', 'EE'] };
+// Esneme: burnun altında açık ağız (pembe iç)
+export const YAWN: Sprite = { offsetX: 18, offsetY: 9, rows: ['.KK', 'KPK', '.KK'] };
+// Uyuyunca başın üstünde süzülen "z"
+export const SNORE_Z: Sprite = { offsetX: 0, offsetY: 0, rows: ['WWWW', '..W.', '.W..', 'WWWW'] };
 
 // --- Mod 0: Yaprak kanat. İki kare: kanat yukarıda / dokununca aşağı çırpılmış.
 export const LEAF_FRAMES: Sprite[] = [

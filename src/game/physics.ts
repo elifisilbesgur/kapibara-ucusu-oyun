@@ -26,6 +26,12 @@ export function stepVelocity(
   return Math.min(velocity + GRAVITY * gravityScale * dt, maxFall ?? MAX_FALL_SPEED);
 }
 
+// Uykululuk 0 → 1 birikir (fullAfter saniyede dolar)
+export function stepDrowsiness(drowsiness: number, dt: number, fullAfter: number): number {
+  'worklet';
+  return Math.min(1, drowsiness + dt / fullAfter);
+}
+
 // y += velocity * dt
 export function stepPosition(y: number, velocity: number, dt: number): number {
   'worklet';

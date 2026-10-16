@@ -45,6 +45,10 @@ export type ModeRules = {
   floatLift: number; // Suda yüzerken gövde ortası su yüzeyinin bu kadar üstünde (dp)
   // Kasa (isteğe bağlı): bu parçaların her birinden en az biri toplanınca bonus
   kit?: { parts: string[]; bonus: number };
+  // Uykululuk (isteğe bağlı): para (portakal) yemeden geçen sürede 0 → 1 birikir, para yiyince sıfırlanır.
+  // fullAfter: kaç saniyede tamamen uykulu; tam uykuluyken zıplama jumpLoss kadar zayıf,
+  // yerçekimi gravityGain kadar güçlü (ör. 0.12 → %12)
+  drowsiness?: { fullAfter: number; jumpLoss: number; gravityGain: number };
 };
 
 // --- Görünüm: React bileşenleri. Sadece çizim tarafı kullanır.
@@ -61,6 +65,7 @@ export type PlayerProps = {
   level: SharedValue<number>;
   phase: SharedValue<GamePhase>;
   joyTime: SharedValue<number>;
+  drowsiness: SharedValue<number>; // 0 = dinç, 1 = uyuyor
 };
 
 export type ObstacleViewProps = {
