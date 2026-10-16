@@ -54,7 +54,7 @@ yardımcı gerekiyorsa `src/game/` içine ya da useFrameCallback'in içine koy.
 
 ```
 src/
-  app/         _layout.tsx, index.tsx (ana menü), game.tsx (?mode=capybara|burak)
+  app/         _layout.tsx, index.tsx (ana menü), game.tsx (?mode=capybara|burak), album.tsx
   game/        (worklet) constants, physics, collision, spawner, items, passengers, levels, kit,
                animation, phase
   modes/       types.ts (GameMode = rules + view), capybara.ts, burak.ts, index.ts (MODES)
@@ -212,4 +212,10 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
   giriş; `leafFrame(wind, flipped, time)`. Bambu boğumlarında iki yaprak (LEAF_FRAMES: sakin sarkık,
   rüzgârda yöne kalkar + titrer; üst kamış ters çizildiği için yön çevrilir). Geçitte beyaz hava
   çizgileri rüzgâr yönünde kayar. ObstacleViewProps'a `clock` eklendi. Burak modunda rüzgâr yok.
-- Sıradaki adım: 10, 14–16'dan biri.
+- Adım 14 tamam (arkadaş defteri): store'da kalıcı `friends` ({ firstMet ISO, rides }) + `meetFriends`
+  (ilk kez tanışılanları döndürür). GameScreen yolcu binince `handleNewPassengers` → deftere yaz,
+  ilk tanışmada banner "Yeni arkadaş!". `app/album.tsx`: polaroid kartlar (`FriendPhoto.tsx`: sabah
+  gökyüzü + sırtında arkadaşla gülümseyen kapibara), ad/yetenek/tanışma tarihi/uçuş sayısı;
+  tanışılmamış = siluet (`silhouette()`) + "???". Türkçe ay adları elle (cihazdan bağımsız).
+  Ana menüde "📔 Arkadaş Defteri".
+- Sıradaki adım: 10, 15, 16.

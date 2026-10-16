@@ -5,6 +5,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useDerivedValue, useFrameCallback, useSharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
+import { PASSENGER_NAMES } from '@/art/passengers';
 import { Background } from '@/components/Background';
 import { Confetti } from '@/components/Confetti';
 import { GameMenu } from '@/components/GameMenu';
@@ -95,6 +96,7 @@ export default function GameScreen({ mode }: Props) {
   const addOranges = useGameStore((state) => state.addOranges);
   const submitScore = useGameStore((state) => state.submitScore);
   const best = useGameStore((state) => state.bestScores[mode.id]);
+  const meetFriends = useGameStore((state) => state.meetFriends);
 
   // Oyun bitti (JS tarafı): skoru kaydet, rekorsa panelde "Yeni rekor!" yazsın
   const handleGameOver = (finalScore: number) => {
@@ -119,6 +121,14 @@ export default function GameScreen({ mode }: Props) {
   const level = useSharedValue(0); // 0-4: hangi mod
   const levelBlend = useSharedValue(0); // gökyüzü geçişi için yumuşak seviye
   const bannerTime = useSharedValue(0); // "yeni mod" yazısının kalan süresi
+
+  // Yolcu bindi (JS tarafı): arkadaş defterine işle; ilk kez tanışılan varsa duyur
+  const handleNewPassengers = (kinds: PassengerKind[]) => {
+    const fresh = meetFriends(kinds);
+    if (fresh.length === 0) return;
+    setBanner({ label: 'Yeni arkadaş!', title: fresh.map((kind) => PASSENGER_NAMES[kind]).join(', ') });
+    bannerTime.set(LEVEL_BANNER_TIME);
+  };
 
   // Sadece görünüm için
   const thrust = useSharedValue(0); // alev, pervane, kanat çırpma
@@ -250,6 +260,7 @@ export default function GameScreen({ mode }: Props) {
     if (picked.newPassengers.length > 0) {
       passengers.set([...passengers.get(), ...picked.newPassengers]);
       scheduleOnRN(setPassengerCount, passengers.get().length);
+      scheduleOnRN(handleNewPassengers, picked.newPassengers);
       scheduleOnRN(hapticPassenger);
       scheduleOnRN(soundPassenger);
     }

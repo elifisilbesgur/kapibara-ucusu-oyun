@@ -46,6 +46,12 @@ export default function MainMenu() {
 
         <ModeCard id="capybara" name="Kapibara" best={bestScores.capybara} preview={<CapybaraPreview />} />
         <ModeCard id="burak" name="Burak Uçuyor" best={bestScores.burak} preview={<BurakPreview />} />
+
+        <Link href="/album" asChild>
+          <Pressable style={({ pressed }) => [styles.albumButton, pressed && styles.cardPressed]}>
+            <Text style={styles.albumText}>📔 Arkadaş Defteri</Text>
+          </Pressable>
+        </Link>
       </View>
     </View>
   );
@@ -160,6 +166,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#7A5A44',
+  },
+  albumButton: {
+    marginTop: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 3,
+    borderColor: DARK,
+    backgroundColor: '#FFF6E8',
+  },
+  albumText: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: DARK,
   },
   play: {
     fontSize: 22,

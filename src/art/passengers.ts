@@ -49,3 +49,21 @@ export const PASSENGER_SPRITES: Record<PassengerKind, Sprite> = {
   turtle: TURTLE,
   monkey: MONKEY,
 };
+
+// Arkadaş defteri için adlar ve yetenekler
+export const PASSENGER_NAMES: Record<PassengerKind, string> = {
+  bird: 'Kuş',
+  turtle: 'Kaplumbağa',
+  monkey: 'Maymun',
+};
+
+export const PASSENGER_ABILITIES: Record<PassengerKind, string> = {
+  bird: 'Hafif; itişi güçlendirir',
+  turtle: 'Ağır; bir çarpmayı kabuğuyla karşılar',
+  monkey: 'Portakalları uzaktan toplar',
+};
+
+// Henüz tanışılmamış arkadaş: aynı şekil, dolu siluet
+export function silhouette(sprite: Sprite): Sprite {
+  return { ...sprite, rows: sprite.rows.map((row) => row.replace(/[^.]/g, 'K')) };
+}
