@@ -5,9 +5,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ORANGE } from '@/art/world';
 import { PixelSprite } from '@/components/PixelSprite';
 import { ITEM_SIZE, PIXEL_SIZE } from '@/game/constants';
+import type { GamePhase } from '@/game/phase';
 import { useGameStore } from '@/store/useGameStore';
-
-export type GamePhase = 'ready' | 'playing' | 'over';
 
 type Props = {
   phase: GamePhase;

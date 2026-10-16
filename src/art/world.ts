@@ -85,3 +85,29 @@ export const STAR: Sprite = {
   offsetY: 0,
   rows: ['.A.', 'AAA', '.A.'],
 };
+
+// Deniz yüzeyi: yan yana tekrarlanan dalga karosu. Altı düz su bantları.
+export const WATER_TILE: Sprite = {
+  offsetX: 0,
+  offsetY: 0,
+  rows: [
+    '..hhh.....hhh...',
+    'hhwwwhhhhhwwwhhh',
+    'wwwwwwwwwwwwwwww',
+    'wwwiwwwwwwwiwwww',
+    'iiiiiiiiiiiiiiii',
+  ],
+};
+
+// Suya düşünce sıçrayan damlalar
+export const SPLASH: Sprite = {
+  offsetX: 0,
+  offsetY: 0,
+  rows: [
+    '.h......h.',
+    'h.h.hh.h.h',
+    '..h.hh.h..',
+    '..hhwwhh..',
+    '.hwwwwwwh.',
+  ],
+};

@@ -47,6 +47,19 @@ export const PROPELLER_FPS = 10; // Pervane sakinken saniyede kaç kare döner
 export const PROPELLER_BOOST_FPS = 20; // Dokununca bu kadar ek hız
 export const FLAME_FLICKER_FPS = 12; // Alev saniyede kaç kez titrer
 
+// Deniz ve kayıp anı
+export const WATER_HEIGHT = 60; // Ekranın altındaki deniz şeridi (20 piksel x PIXEL_SIZE)
+export const HIT_BOUNCE = -250; // Bambuya/tavana çarpınca hafifçe sekip sonra düşer
+export const FLOAT_LIFT = 18; // Sırtüstü yüzerken gövde ortası su yüzeyinin bu kadar üstünde
+export const FLOAT_BOB = 3; // Suda bu kadar aşağı-yukarı sallanır (dp)
+export const FLOAT_BOB_SPEED = 2; // Sallanma hızı (radyan/sn)
+export const SPLASH_TIME = 0.5; // Su sıçraması bu kadar saniye görünür
+
+// His
+export const SHAKE_TIME = 0.35; // Çarpınca ekran bu kadar saniye sarsılır
+export const SHAKE_AMOUNT = 6; // En fazla bu kadar dp kayar
+export const SMILE_TIME = 0.9; // Portakal yiyince bu kadar saniye minicik gülümser
+
 // Seviyeler: skor eşiği geçilince kapibara yeni moda evrimleşir, gökyüzü değişir.
 // gravity/jump: GRAVITY ve JUMP_VELOCITY ile çarpılır. maxFall: en yüksek düşüş hızı.
 // speed: bambuların kayma hızı çarpanı (oyun yavaş yavaş hızlanır).

@@ -34,6 +34,11 @@ export const PALETTE: Record<string, string> = {
   n: '#7A5A44', // balon ipi
   V: '#F3EEE0', // kuş kanadı (krem)
   v: '#BDB39A', // kuş kanadı gölge/çerçeve
+  // Deniz
+  h: '#E6F8FC', // köpük
+  w: '#5EC3E6', // su yüzeyi
+  i: '#3FA4D4', // su
+  I: '#2A7DB3', // derin su
   // Gökyüzü ve bulutlar (her seviyenin kendi bulut rengi)
   c: '#D4EDF5', // gündüz bulut gölgesi
   Q: '#FFE3D0', // akşam bulutu

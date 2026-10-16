@@ -123,4 +123,9 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
   her modun gravity/jump/maxFall'u ve bambu hız çarpanı var. Gövde artık çıplak (`BODY`),
   modlar `Gear` ile giydirilir (Capybara.tsx). Gökyüzü `art/skies.ts`: sabah/öğle/akşam/alacakaranlık/gece;
   `levelBlend` ile 1.5 sn'de yumuşak geçiş. Seviye atlayınca Hud'da "Yeni mod" yazısı.
-- Sıradaki adım: 9 (his: ses, haptics, sarsıntı, parallax + tepkisiz yüz/gülümseme, suya düşme).
+- Adım 9a tamam: ekranın altında deniz (`Water.tsx`, WATER_HEIGHT=60, dalgalar kayar). Oyun alanı
+  artık `waterY` (height − WATER_HEIGHT) ile sınırlı. Faz eklendi: `falling` (`game/phase.ts`).
+  Bambu/tavan → sekip düşer (HIT_BOUNCE) + sarsıntı + ağır titreşim → suya değince sıçrama,
+  `over`: gövde dikey aynalanır (sırtüstü), gözler kapalı, mod parçaları gizli, yolcular ayakların
+  üstünde güneşlenir, suda sallanır. Portakal yiyince SMILE (0.9 sn). Titreşimler `feedback/haptics.ts`.
+- Sıradaki adım: 9b (ses — expo-audio, piksel tarzı efektler; parallax: kayan bulutlar).

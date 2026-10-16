@@ -29,6 +29,11 @@ export const BODY: Sprite = {
 // Dönme ve konumlama merkezi: gövdenin ortası (piksel cinsinden).
 export const PIVOT = { x: 14, y: 9 };
 
+// Yüz ifadeleri: gövdenin üstüne çizilen küçük yamalar.
+// Gülümseme (portakal yiyince) ve kapalı gözler (suda sırtüstü yüzerken).
+export const SMILE: Sprite = { offsetX: 18, offsetY: 9, rows: ['K.K', '.K.'] };
+export const EYES_CLOSED: Sprite = { offsetX: 17, offsetY: 5, rows: ['BB', 'KK'] };
+
 // --- Mod 0: Yaprak kanat. İki kare: kanat yukarıda / dokununca aşağı çırpılmış.
 export const LEAF_FRAMES: Sprite[] = [
   {
