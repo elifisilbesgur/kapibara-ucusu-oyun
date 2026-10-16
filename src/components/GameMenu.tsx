@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MODES } from '@/modes';
+import { useGameStore } from '@/store/useGameStore';
 import type { ModeId } from '@/modes/types';
 
 type Props = {
@@ -16,6 +17,8 @@ type Props = {
 export function GameMenu({ currentMode, onOpenChange }: Props) {
   const insets = useSafeAreaInsets();
   const [open, setOpen] = useState(false);
+  const soundOn = useGameStore((state) => state.soundOn);
+  const toggleSound = useGameStore((state) => state.toggleSound);
 
   const setMenuOpen = (value: boolean) => {
     setOpen(value);
@@ -72,6 +75,15 @@ export function GameMenu({ currentMode, onOpenChange }: Props) {
             </Pressable>
           );
         })}
+        <Pressable
+          style={styles.item}
+          onPress={toggleSound}
+          accessibilityRole="switch"
+          accessibilityState={{ checked: soundOn }}
+        >
+          <Text style={styles.itemText}>Ses</Text>
+          <Text style={styles.itemText}>{soundOn ? 'Açık' : 'Kapalı'}</Text>
+        </Pressable>
         <Pressable style={styles.close} onPress={() => setMenuOpen(false)}>
           <Text style={styles.closeText}>Devam et</Text>
         </Pressable>

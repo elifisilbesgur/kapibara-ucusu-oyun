@@ -1,19 +1,20 @@
 import { Group, Rect } from '@shopify/react-native-skia';
 import { useDerivedValue, type SharedValue } from 'react-native-reanimated';
 
-import type { Sky } from '@/art/skies';
 import type { Sprite } from '@/art/palette';
+import type { Sky } from '@/art/skies';
 import { MOON, STAR } from '@/art/world';
 import { PixelSprite } from '@/components/PixelSprite';
 import { PIXEL_SIZE, WATER_HEIGHT } from '@/game/constants';
 
 // Bulut, yıldız ve ayın yeri ekranın oranı olarak: her ekran boyunda benzer dağılım.
+// depth: kayma hızı, engellere göre (küçük = uzak = yavaş). Her bulut biraz farklı → derinlik hissi.
 const CLOUDS = [
-  { x: 0.08, y: 0.1 },
-  { x: 0.62, y: 0.2 },
-  { x: 0.3, y: 0.42 },
-  { x: 0.75, y: 0.62 },
-  { x: 0.12, y: 0.78 },
+  { x: 0.08, y: 0.1, depth: 0.12 },
+  { x: 0.62, y: 0.2, depth: 0.16 },
+  { x: 0.3, y: 0.42, depth: 0.2 },
+  { x: 0.75, y: 0.62, depth: 0.24 },
+  { x: 0.12, y: 0.78, depth: 0.22 },
 ];
 const STARS = [
   { x: 0.05, y: 0.04 },
@@ -26,8 +27,10 @@ const STARS = [
 ];
 const MOON_POSITION = { x: 0.72, y: 0.06 };
 const SKYLINE_GAP = 3; // Kıyıdaki şeyler arasında bu kadar piksel boşluk
+const SKYLINE_DEPTH = 0.35; // Kıyı bulutlardan yakın, engellerden uzak
 
-// Kıyı silüeti: sprite'ları soldan sağa ekran dolana kadar sırayla diz (piksel cinsinden x'ler)
+// Kıyı silüeti: sprite'ları soldan sağa ekranı dolduracak kadar sırayla diz.
+// Toplam uzunluğu da döndürür: kayarken aynı diziden ikinci bir kopya hemen arkasına konur.
 function layoutSkyline(sprites: Sprite[], screenWidth: number) {
   const placed: { sprite: Sprite; x: number }[] = [];
   let x = 0;
@@ -36,7 +39,7 @@ function layoutSkyline(sprites: Sprite[], screenWidth: number) {
     placed.push({ sprite, x });
     x += sprite.rows[0].length + SKYLINE_GAP;
   }
-  return placed;
+  return { placed, length: x * PIXEL_SIZE };
 }
 
 type Props = {
@@ -44,16 +47,18 @@ type Props = {
   height: number;
   skies: Sky[]; // Modun seviye başına gökyüzleri
   levelBlend: SharedValue<number>; // 0 → son seviye arası yumuşak seviye
+  scroll: SharedValue<number>; // Dünyanın ne kadar kaydığı (dp); arka plan bunun kesri kadar kayar
 };
 
 // Her seviyenin gökyüzü üst üste çizilir; yenisi, levelBlend ilerledikçe görünür hale gelir.
-export function Background({ width, height, skies, levelBlend }: Props) {
+export function Background({ width, height, skies, levelBlend, scroll }: Props) {
   return skies.map((sky, level) => (
     <SkyLayer
       key={level}
       sky={sky}
       level={level}
       levelBlend={levelBlend}
+      scroll={scroll}
       width={width}
       height={height}
     />
@@ -64,12 +69,14 @@ function SkyLayer({
   sky,
   level,
   levelBlend,
+  scroll,
   width,
   height,
 }: {
   sky: Sky;
   level: number;
   levelBlend: SharedValue<number>;
+  scroll: SharedValue<number>;
   width: number;
   height: number;
 }) {
@@ -103,16 +110,87 @@ function SkyLayer({
         </>
       )}
       {CLOUDS.map((cloud, i) => (
-        <Group key={i} transform={at(cloud)}>
-          <PixelSprite sprite={sky.floaters[i % sky.floaters.length]} />
-        </Group>
+        <Drifting
+          key={i}
+          sprite={sky.floaters[i % sky.floaters.length]}
+          start={cloud}
+          depth={cloud.depth}
+          scroll={scroll}
+          width={width}
+          height={height}
+        />
       ))}
-      {sky.skyline &&
-        layoutSkyline(sky.skyline, width).map(({ sprite, x }, i) => (
+      {sky.skyline && (
+        <Skyline sprites={sky.skyline} scroll={scroll} width={width} height={height} />
+      )}
+    </Group>
+  );
+}
+
+// Uzakta süzülen tek bir şey (bulut, disket...). Soldan çıkınca sağdan geri girer.
+function Drifting({
+  sprite,
+  start,
+  depth,
+  scroll,
+  width,
+  height,
+}: {
+  sprite: Sprite;
+  start: { x: number; y: number };
+  depth: number;
+  scroll: SharedValue<number>;
+  width: number;
+  height: number;
+}) {
+  const spriteWidth = sprite.rows[0].length * PIXEL_SIZE;
+  const loop = width + spriteWidth; // Bir tur: ekranın sağından girip solundan tamamen çıkana kadar
+
+  const transform = useDerivedValue(() => {
+    // + spriteWidth: kayma 0'ken bulut tam başlangıç yerinde dursun (aşağıda geri çıkarılıyor)
+    const travelled = start.x * width + spriteWidth - scroll.get() * depth;
+    // Bölümden kalan (eksi sayılar için de doğru çalışan hali): 0 ile loop arası
+    const wrapped = ((travelled % loop) + loop) % loop;
+    return [
+      { translateX: Math.round(wrapped - spriteWidth) },
+      { translateY: Math.round(start.y * height) },
+      { scale: PIXEL_SIZE },
+    ];
+  });
+
+  return (
+    <Group transform={transform}>
+      <PixelSprite sprite={sprite} />
+    </Group>
+  );
+}
+
+// Deniz kıyısındaki dizi; iki kopya arka arkaya kayar, biri çıkınca diğeri yerini alır
+function Skyline({
+  sprites,
+  scroll,
+  width,
+  height,
+}: {
+  sprites: Sprite[];
+  scroll: SharedValue<number>;
+  width: number;
+  height: number;
+}) {
+  const { placed, length } = layoutSkyline(sprites, width);
+
+  const transform = useDerivedValue(() => [
+    { translateX: -Math.round((scroll.get() * SKYLINE_DEPTH) % length) },
+  ]);
+
+  return (
+    <Group transform={transform}>
+      {[0, length].map((copyX) =>
+        placed.map(({ sprite, x }, i) => (
           <Group
-            key={i}
+            key={`${copyX}-${i}`}
             transform={[
-              { translateX: x * PIXEL_SIZE },
+              { translateX: copyX + x * PIXEL_SIZE },
               // Alt kenarı deniz yüzeyine otursun
               { translateY: height - WATER_HEIGHT - sprite.rows.length * PIXEL_SIZE },
               { scale: PIXEL_SIZE },
@@ -120,7 +198,8 @@ function SkyLayer({
           >
             <PixelSprite sprite={sprite} />
           </Group>
-        ))}
+        )),
+      )}
     </Group>
   );
 }

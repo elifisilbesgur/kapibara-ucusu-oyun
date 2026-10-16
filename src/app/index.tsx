@@ -31,7 +31,13 @@ export default function MainMenu() {
   return (
     <View style={styles.container}>
       <Canvas style={StyleSheet.absoluteFill}>
-        <Background width={width} height={height} skies={[SKIES[0]]} levelBlend={levelBlend} />
+        <Background
+          width={width}
+          height={height}
+          skies={[SKIES[0]]}
+          levelBlend={levelBlend}
+          scroll={still}
+        />
         <Water width={width} height={height} scroll={still} splashX={still} splashTime={still} />
       </Canvas>
 

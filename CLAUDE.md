@@ -64,8 +64,9 @@ src/
                Water, Confetti, Hud, GameMenu, PixelSprite, PixelImage
   screens/     GameScreen.tsx (tek motor, `mode` prop'u alır)
   store/       useGameStore.ts (portakal + moda göre rekor, AsyncStorage)
-  feedback/    haptics.ts
-assets/        sprites/ (Burak Uçuyor PNG'leri)
+  feedback/    haptics.ts, sounds.ts
+scripts/       make-sounds.py (ses efektlerini üretir)
+assets/        sprites/ (Burak Uçuyor PNG'leri), sounds/ (üretilmiş WAV'lar)
 ```
 
 Çarpışma: dikdörtgen kesişimi (`intersects(a: Box, b: Box)`).
@@ -187,4 +188,9 @@ Her adım bitince aşağıdaki Durum bölümünü güncelle.
     `handleGameOver` skoru kaydeder; Hud "Yeni rekor!" / "En iyi: N". Görsel testi ekranı silindi.
     Hamburger menüde "Ana menü".
   - B7 tamam: bu dosyaya "Burak Uçuyor modu" bölümü, dizin ağacı güncellendi.
-- Sıradaki adım: 9b (ses — expo-audio, piksel tarzı efektler; parallax: kayan bulutlar).
+- Adım 9b tamam: ses efektleri `scripts/make-sounds.py` ile üretilen çiptün WAV'lar (`assets/sounds/`:
+  jump, pickup, passenger, hit, splash, levelup, kit). `feedback/sounds.ts`: modül düzeyinde
+  `createAudioPlayer`, `playsInSilentMode: false`, `mixWithOthers`; çalmadan önce `seekTo(0)`.
+  Store'da kalıcı `soundOn`, ☰ menüde Ses Açık/Kapalı. Parallax: `Background` `scroll` (worldScroll)
+  alır; bulutlar/süzülenler depth 0.12–0.24 ile kayar ve sarar, kıyı silüeti 0.35 ile iki kopya halinde.
+- Sıradaki adım: 10 (cila: ayarlar vb.) ya da 11–16'dan biri.

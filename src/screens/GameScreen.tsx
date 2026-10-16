@@ -17,6 +17,15 @@ import {
   hapticPassenger,
   hapticSplash,
 } from '@/feedback/haptics';
+import {
+  soundHit,
+  soundJump,
+  soundKit,
+  soundLevelUp,
+  soundPassenger,
+  soundPickup,
+  soundSplash,
+} from '@/feedback/sounds';
 import { stepPropeller, stepThrust } from '@/game/animation';
 import { hitsAnyObstacle, isOutOfBounds, playerBox } from '@/game/collision';
 import {
@@ -104,7 +113,7 @@ export default function GameScreen({ mode }: Props) {
   const thrust = useSharedValue(0); // alev, pervane, kanat çırpma
   const propellerPhase = useSharedValue(0);
   const clock = useSharedValue(0);
-  const waterScroll = useSharedValue(0); // dalgaların kayması
+  const worldScroll = useSharedValue(0); // dünyanın kayması (dalgalar ve parallax arka plan)
   const splashX = useSharedValue(0);
   const splashTime = useSharedValue(0);
   const shakeTime = useSharedValue(0);
@@ -130,6 +139,7 @@ export default function GameScreen({ mode }: Props) {
       splashX.set(playerX);
       splashTime.set(SPLASH_TIME);
       scheduleOnRN(hapticSplash);
+      scheduleOnRN(soundSplash);
       scheduleOnRN(handleGameOver, scoreSV.get());
       scheduleOnRN(setPhase, 'over');
     };
@@ -174,7 +184,7 @@ export default function GameScreen({ mode }: Props) {
     playerY.set(stepPosition(playerY.get(), velocity.get(), dt));
     const gapSize = gapSizeFor(scoreSV.get(), rules); // Yeni gelen engeller bu boyla kurulur
     obstacles.set(stepObstacles(obstacles.get(), dt, waterY, rules, stage.speed, gapSize));
-    waterScroll.set(waterScroll.get() + OBSTACLE_SPEED * stage.speed * dt);
+    worldScroll.set(worldScroll.get() + OBSTACLE_SPEED * stage.speed * dt);
     shieldTime.set(Math.max(0, shieldTime.get() - dt));
 
     // Puan: geçilen her engel, yolcu çarpanıyla
@@ -197,16 +207,19 @@ export default function GameScreen({ mode }: Props) {
       scheduleOnRN(setRunOranges, runOrangesSV.get());
       scheduleOnRN(addOranges, picked.currency);
       scheduleOnRN(hapticOrange);
+      scheduleOnRN(soundPickup);
     }
     if (picked.newPassengers.length > 0) {
       passengers.set([...passengers.get(), ...picked.newPassengers]);
       scheduleOnRN(setPassengerCount, passengers.get().length);
       scheduleOnRN(hapticPassenger);
+      scheduleOnRN(soundPassenger);
     }
     if (picked.parts.length > 0) {
       gained += picked.partPoints;
       joyTime.set(rules.joyTime); // Yeni parça süreyi baştan başlatır
       scheduleOnRN(hapticOrange);
+      scheduleOnRN(soundPickup);
 
       // Kasa: her türden biri toplanınca bonus + kutlama, kasa sıfırlanır
       if (rules.kit) {
@@ -221,6 +234,7 @@ export default function GameScreen({ mode }: Props) {
           bannerTime.set(LEVEL_BANNER_TIME);
           scheduleOnRN(setBanner, { label: 'Kasa tamam!', title: `+${rules.kit.bonus} bonus` });
           scheduleOnRN(hapticLevelUp);
+          scheduleOnRN(soundKit);
         }
       }
     }
@@ -236,6 +250,7 @@ export default function GameScreen({ mode }: Props) {
         bannerTime.set(LEVEL_BANNER_TIME);
         scheduleOnRN(setBanner, { label: 'Yeni mod', title: rules.levels[newLevel].name });
         scheduleOnRN(hapticLevelUp);
+        scheduleOnRN(soundLevelUp);
       }
     }
 
@@ -255,11 +270,13 @@ export default function GameScreen({ mode }: Props) {
       shakeTime.set(SHAKE_TIME / 2);
       scheduleOnRN(setPassengerCount, passengers.get().length);
       scheduleOnRN(hapticPassenger);
+      scheduleOnRN(soundHit);
     } else if (hitBamboo || isOutOfBounds(box, waterY)) {
       phaseSV.set('falling');
       velocity.set(HIT_BOUNCE);
       shakeTime.set(SHAKE_TIME);
       scheduleOnRN(hapticHit);
+      scheduleOnRN(soundHit);
       scheduleOnRN(setPhase, 'falling');
     }
   });
@@ -305,6 +322,7 @@ export default function GameScreen({ mode }: Props) {
     // Zıplama gücü: seviyenin kendi itişi x yolcular (kuş güçlendirir, diğerleri zayıflatır)
     velocity.set(JUMP_VELOCITY * rules.levels[level.get()].jump * jumpScale(passengers.get()));
     thrust.set(1); // Alev büyüsün, pervane hızlansın, kanat çırpsın
+    scheduleOnRN(soundJump);
   });
 
   // Ekran sarsıntısı: sarsıntı süresi azaldıkça sönen titreşim
@@ -329,6 +347,7 @@ export default function GameScreen({ mode }: Props) {
                 height={height}
                 skies={view.skies}
                 levelBlend={levelBlend}
+                scroll={worldScroll}
               />
               {Array.from({ length: slots }, (_, i) => (
                 <view.Obstacle key={i} obstacles={obstacles} index={i} screenHeight={height} />
@@ -354,7 +373,7 @@ export default function GameScreen({ mode }: Props) {
               <Water
                 width={width}
                 height={height}
-                scroll={waterScroll}
+                scroll={worldScroll}
                 splashX={splashX}
                 splashTime={splashTime}
               />

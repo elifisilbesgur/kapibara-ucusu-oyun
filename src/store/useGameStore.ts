@@ -8,7 +8,9 @@ import type { ModeId } from '@/modes/types';
 type GameStore = {
   totalOranges: number;
   bestScores: Record<ModeId, number>; // Her modun rekoru ayrı
+  soundOn: boolean;
   addOranges: (count: number) => void;
+  toggleSound: () => void;
   // Biten oyunun skorunu kaydeder; rekor kırıldıysa true döner
   submitScore: (mode: ModeId, score: number) => boolean;
 };
@@ -18,6 +20,8 @@ export const useGameStore = create<GameStore>()(
     (set, get) => ({
       totalOranges: 0,
       bestScores: { capybara: 0, burak: 0 },
+      soundOn: true,
+      toggleSound: () => set((state) => ({ soundOn: !state.soundOn })),
       addOranges: (count) => set((state) => ({ totalOranges: state.totalOranges + count })),
       submitScore: (mode, score) => {
         const previous = get().bestScores[mode] ?? 0;
